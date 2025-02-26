@@ -38,7 +38,8 @@
         "port": 4400,
         "configDir": "libs/ngx-tailwind-flex-ui/.storybook",
         "browserTarget": "ngx-tailwind-flex-ui:build-storybook",
-        "compodoc": false,
+        "compodoc": true,
+        "compodocArgs": ["-e", "json", "-d", "libs/ngx-tailwind-flex-ui"],
         "styles": ["libs/ngx-tailwind-flex-ui/src/styles.scss"]
       },
       "configurations": {
@@ -55,7 +56,9 @@
         "configDir": "libs/ngx-tailwind-flex-ui/.storybook",
         "browserTarget": "ngx-tailwind-flex-ui:build-storybook",
         "compodoc": true,
-        "compodocArgs": ["-e", "json", "-d", "libs/ngx-tailwind-flex-ui"]
+        "compodocArgs": ["-e", "json", "-d", "libs/ngx-tailwind-flex-ui"],
+        "styles": ["libs/ngx-tailwind-flex-ui/src/styles.scss"]
+
       },
       "configurations": {
         "ci": {

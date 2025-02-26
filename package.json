@@ -1,6 +1,6 @@
 {
-  "name": "@ngx-tailwind-flex-ui/source",
-  "version": "0.0.0",
+  "name": "@iarunsaragadam/ngx-tailwind-flex-ui",
+  "version": "0.0.1-canary.0.0",
   "license": "MIT",
   "scripts": {
     "test": "npx nx run-many --target=test",
@@ -8,7 +8,7 @@
     "lint": "npx nx run-many --target=lint",
     "e2e": "npx nx run-many --target=e2e"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "@angular/animations": "~19.1.0",
     "@angular/common": "~19.1.0",
