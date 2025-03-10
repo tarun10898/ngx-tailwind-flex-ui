@@ -1,0 +1,17 @@
+.text-area {
+  min-height: 100px;
+  width: 100%;
+  background: transparent;
+  color: #333;
+  border-radius: 5px;
+  outline: none;
+}
+
+.dark-mode {
+  background: #1a202c;
+  color: white;
+}
+
+button {
+  transition: all 0.3s ease-in-out;
+}

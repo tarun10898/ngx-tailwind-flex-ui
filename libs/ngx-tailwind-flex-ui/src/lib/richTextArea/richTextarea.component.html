@@ -1,0 +1,38 @@
+<div class="p-4 border rounded-lg shadow-md bg-white dark:bg-gray-900">
+  <!-- Text Input Area -->
+  <div
+    #textArea
+    contenteditable="true"
+    class="w-full min-h-[100px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    (keydown)="onKeydown($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+  ></div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center justify-between mt-3">
+    <button
+      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+      (click)="sendMessage.emit(textArea.innerText.trim())"
+    >
+      Send
+    </button>
+
+    <!-- File Upload -->
+    <label class="cursor-pointer">
+      📎
+      <input type="file" class="hidden" (change)="onFileSelected($event)" />
+    </label>
+
+    <!-- Emoji Picker -->
+    <button class="text-xl" (click)="toggleEmojiPicker()">😀</button>
+    <div *ngIf="showEmojiPicker" class="absolute bg-white p-2 rounded shadow">
+      <button
+        *ngFor="let emoji of ['😊', '😂', '❤️', '👍', '🔥', '😍', '😎', '🎉']"
+        (click)="insertEmoji(emoji)"
+      >
+        {{ emoji }}
+      </button>
+    </div>
+  </div>
+</div>
