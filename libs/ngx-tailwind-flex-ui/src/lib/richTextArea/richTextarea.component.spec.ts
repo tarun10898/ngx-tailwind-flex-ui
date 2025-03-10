@@ -26,7 +26,7 @@ describe('RichTextAreaComponent', () => {
   it('should set placeholder text initially', async () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
 
-    await fixture.whenStable(); // Ensure Angular updates the view
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(textArea.nativeElement.textContent.trim()).toBe(
@@ -37,11 +37,11 @@ describe('RichTextAreaComponent', () => {
   it('should clear placeholder text on focus', async () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
 
-    textArea.nativeElement.textContent = component.placeholder; // Ensure placeholder exists
+    textArea.nativeElement.textContent = component.placeholder;
     fixture.detectChanges();
 
     textArea.triggerEventHandler('focus', null);
-    await fixture.whenStable(); // Ensure Angular updates the view
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(textArea.nativeElement.textContent.trim()).toBe('');
@@ -50,11 +50,11 @@ describe('RichTextAreaComponent', () => {
   it('should restore placeholder text when blurred and empty', async () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
 
-    textArea.nativeElement.textContent = ''; // Simulate empty text
+    textArea.nativeElement.textContent = '';
     fixture.detectChanges();
 
     textArea.triggerEventHandler('blur', null);
-    await fixture.whenStable(); // Ensure Angular updates the view
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(textArea.nativeElement.textContent.trim()).toBe(
@@ -63,7 +63,7 @@ describe('RichTextAreaComponent', () => {
   });
 
   it('should emit sendMessage event when Enter is pressed', () => {
-    jest.spyOn(component.sendMessage, 'emit'); // ✅ FIXED
+    jest.spyOn(component.sendMessage, 'emit');
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
 
     textArea.nativeElement.textContent = 'Hello, world!';
@@ -79,7 +79,7 @@ describe('RichTextAreaComponent', () => {
   });
 
   it('should emit fileAttached event when a file is selected', () => {
-    const spy = jest.spyOn(component.fileAttached, 'emit'); // ✅ Use Jest's spyOn
+    const spy = jest.spyOn(component.fileAttached, 'emit');
 
     const input = fixture.debugElement.query(By.css('input[type="file"]'));
     const file = new File(['test'], 'test.txt', { type: 'text/plain' });
@@ -88,7 +88,7 @@ describe('RichTextAreaComponent', () => {
     input.triggerEventHandler('change', event);
     fixture.detectChanges();
 
-    expect(spy).toHaveBeenCalledWith(file); // ✅ Ensure the event is emitted correctly
+    expect(spy).toHaveBeenCalledWith(file);
   });
 
   it('should insert emoji at cursor position when selected', () => {
@@ -101,16 +101,5 @@ describe('RichTextAreaComponent', () => {
     fixture.detectChanges();
 
     expect(textArea.nativeElement.textContent.includes('😊')).toBe(true);
-  });
-
-  it('should set placeholder text initially', async () => {
-    const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
-    await fixture.whenStable(); // Wait for Angular updates
-    fixture.detectChanges();
-
-    expect(textArea.nativeElement.textContent.trim()).toBe(
-      component.placeholder
-    );
   });
 });

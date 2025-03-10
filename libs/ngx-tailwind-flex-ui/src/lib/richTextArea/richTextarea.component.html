@@ -11,27 +11,148 @@
 
   <!-- Action Buttons -->
   <div class="flex items-center justify-between mt-3">
-    <button
-      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-      (click)="sendMessage.emit(textArea.innerText.trim())"
-    >
-      Send
-    </button>
-
-    <!-- File Upload -->
-    <label class="cursor-pointer">
-      📎
-      <input type="file" class="hidden" (change)="onFileSelected($event)" />
-    </label>
-
-    <!-- Emoji Picker -->
-    <button class="text-xl" (click)="toggleEmojiPicker()">😀</button>
-    <div *ngIf="showEmojiPicker" class="absolute bg-white p-2 rounded shadow">
+    <!-- Emoji Button (LEFT SIDE) -->
+    <div class="relative">
       <button
-        *ngFor="let emoji of ['😊', '😂', '❤️', '👍', '🔥', '😍', '😎', '🎉']"
-        (click)="insertEmoji(emoji)"
+        class="text-2xl p-2 rounded-full hover:bg-gray-200"
+        (click)="toggleEmojiPicker()"
       >
-        {{ emoji }}
+        😊
+      </button>
+
+      <!-- Emoji Picker Dropdown (RIGHT SIDE of Button) -->
+      <div
+        *ngIf="showEmojiPicker"
+        class="absolute top-0 left-full ml-2 bg-white border rounded-lg shadow-lg p-2 w-56"
+      >
+        <div class="grid grid-cols-6 gap-2">
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😊')"
+          >
+            😊
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😂')"
+          >
+            😂
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('❤️')"
+          >
+            ❤️
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🔥')"
+          >
+            🔥
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('👍')"
+          >
+            👍
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg text-blue-500 font-bold"
+            (click)="toggleMoreEmojis()"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- More Emojis (Expands below when `+` is clicked) -->
+        <div
+          *ngIf="showMoreEmojis"
+          class="grid grid-cols-6 gap-2 pt-2 border-t mt-2"
+        >
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😍')"
+          >
+            😍
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😎')"
+          >
+            😎
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🎉')"
+          >
+            🎉
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🥳')"
+          >
+            🥳
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🤩')"
+          >
+            🤩
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😆')"
+          >
+            😆
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😜')"
+          >
+            😜
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🤔')"
+          >
+            🤔
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😭')"
+          >
+            😭
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('😏')"
+          >
+            😏
+          </button>
+          <button
+            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+            (click)="insertEmoji('🙌')"
+          >
+            🙌
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send & Attach Buttons (RIGHT SIDE) -->
+    <div class="flex space-x-2">
+      <label
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-300"
+      >
+        Attach
+        <input type="file" class="hidden" (change)="onFileSelected($event)" />
+      </label>
+
+      <button
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        (click)="sendMessage.emit(textArea.innerText.trim())"
+      >
+        Send
       </button>
     </div>
   </div>
