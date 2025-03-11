@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Input } from '@angular/core';
+import { Input, ViewChild } from '@angular/core';
 import {
   Component,
   ElementRef,
   EventEmitter,
   Output,
-  ViewChild,
   AfterViewInit,
   Renderer2,
 } from '@angular/core';
@@ -25,7 +24,13 @@ interface SaveData {
   styleUrls: ['./richTextarea.component.css'],
 })
 export class RichTextAreaComponent implements AfterViewInit {
-  @ViewChild('textArea') textArea!: ElementRef;
+  @ViewChild('textArea', { static: false })
+  textArea!: ElementRef<HTMLDivElement>;
+  @ViewChild('mentionDropdown', { static: false })
+  mentionDropdown!: ElementRef<HTMLDivElement>;
+  @ViewChild('hashtagDropdown', { static: false })
+  hashtagDropdown!: ElementRef<HTMLDivElement>;
+
   @Output() sendMessage = new EventEmitter<string>();
   @Output() fileAttached = new EventEmitter<File>();
   @Output() saveData = new EventEmitter<SaveData>();
@@ -43,25 +48,27 @@ export class RichTextAreaComponent implements AfterViewInit {
   constructor(private renderer: Renderer2) {}
 
   ngAfterViewInit() {
+    if (!this.textArea?.nativeElement) {
+      console.warn('TextArea not initialized.');
+      return;
+    }
     const textAreaEl = this.textArea.nativeElement;
-
-    // ✅ Dynamically update placeholder text in the textarea
-    if (!textAreaEl.textContent.trim()) {
-      textAreaEl.textContent = this.placeholder;
+    if (!textAreaEl.innerText?.trim()) {
+      textAreaEl.innerText = this.placeholder;
     }
   }
 
   clearPlaceholderIfNeeded() {
-    const textAreaEl = this.textArea.nativeElement;
-    if (textAreaEl.textContent.trim() === this.placeholder) {
-      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present
+    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';
+    if (textContent === this.placeholder) {
+      this.textArea.nativeElement.innerText = '';
     }
   }
 
   restorePlaceholderIfEmpty() {
-    const textAreaEl = this.textArea.nativeElement;
-    if (!textAreaEl.textContent.trim()) {
-      textAreaEl.textContent = this.placeholder;
+    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';
+    if (!textContent) {
+      this.textArea.nativeElement.innerText = this.placeholder;
     }
   }
 
@@ -75,13 +82,11 @@ export class RichTextAreaComponent implements AfterViewInit {
 
   onKeydown(event: KeyboardEvent) {
     this.clearPlaceholderIfNeeded();
-    const textContent = this.textArea.nativeElement.textContent.trim();
+    if (!this.textArea?.nativeElement) return;
 
-    // ✅ Ensure mentions and hashtags are tracked
-    this.showMentionDropdown = textContent.includes('@') && event.key === '@';
-    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';
+    const textContent = this.textArea.nativeElement.innerText.trim();
+    if (!textContent) return;
 
-    // ✅ Close dropdowns if space or enter is pressed
     if (event.key === ' ' || event.key === 'Enter') {
       this.showMentionDropdown = false;
       this.showHashtagDropdown = false;
@@ -92,11 +97,34 @@ export class RichTextAreaComponent implements AfterViewInit {
     this.clearPlaceholderIfNeeded();
     this.autoExpand();
 
-    const textContent = this.textArea.nativeElement.textContent.trim();
+    if (!this.textArea?.nativeElement) return;
 
-    // ✅ Ensure mentions and hashtags trigger the dropdown correctly
-    this.showMentionDropdown = textContent.includes('@');
-    this.showHashtagDropdown = textContent.includes('#');
+    const textContent = this.textArea.nativeElement.innerText || '';
+    const words = textContent.split(/\s+/);
+
+    this.showMentionDropdown = false;
+    this.showHashtagDropdown = false;
+
+    // Check all words for mentions and hashtags
+    words.forEach((word) => {
+      if (word.startsWith('@')) {
+        this.showMentionDropdown = true;
+      }
+      if (word.startsWith('#')) {
+        this.showHashtagDropdown = true;
+      }
+    });
+
+    if (this.showMentionDropdown || this.showHashtagDropdown) {
+      this.updateDropdownPosition();
+    }
+  }
+
+  insertEmoji(emoji: string) {
+    if (this.textArea?.nativeElement) {
+      this.textArea.nativeElement.innerText += emoji;
+      this.autoExpand();
+    }
   }
 
   toggleEmojiPicker() {
@@ -107,49 +135,70 @@ export class RichTextAreaComponent implements AfterViewInit {
     this.showMoreEmojis = !this.showMoreEmojis;
   }
 
-  insertEmoji(emoji: string) {
-    this.clearPlaceholderIfNeeded();
-    const textAreaEl = this.textArea.nativeElement;
-    textAreaEl.textContent += emoji;
-    this.showEmojiPicker = false;
-    this.autoExpand();
+  updateDropdownPosition() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const textAreaRect = this.textArea?.nativeElement?.getBoundingClientRect();
+
+    if (!textAreaRect) return;
+
+    if (this.showMentionDropdown && this.mentionDropdown?.nativeElement) {
+      this.renderer.setStyle(
+        this.mentionDropdown.nativeElement,
+        'top',
+        `${rect.bottom - textAreaRect.top}px`
+      );
+      this.renderer.setStyle(
+        this.mentionDropdown.nativeElement,
+        'left',
+        `${rect.left - textAreaRect.left}px`
+      );
+    }
+
+    if (this.showHashtagDropdown && this.hashtagDropdown?.nativeElement) {
+      this.renderer.setStyle(
+        this.hashtagDropdown.nativeElement,
+        'top',
+        `${rect.bottom - textAreaRect.top}px`
+      );
+      this.renderer.setStyle(
+        this.hashtagDropdown.nativeElement,
+        'left',
+        `${rect.left - textAreaRect.left}px`
+      );
+    }
   }
 
   selectMention(mention: string) {
-    this.clearPlaceholderIfNeeded();
-    const textAreaEl = this.textArea.nativeElement;
-    let content = textAreaEl.textContent.trim();
-
-    // ✅ Prevent duplicate `@` before inserting mention
-    if (content.endsWith('@')) {
-      content = content.slice(0, -1).trim();
+    const text = this.textArea?.nativeElement?.innerText.trim();
+    if (text && text.endsWith('@')) {
+      this.textArea.nativeElement.innerText = text.slice(0, -1) + mention;
+      this.showMentionDropdown = false;
+      this.autoExpand();
     }
-    textAreaEl.textContent = content + ' ' + mention + ' ';
-    this.showMentionDropdown = false;
   }
 
   selectHashtag(hashtag: string) {
-    this.clearPlaceholderIfNeeded();
-    const textAreaEl = this.textArea.nativeElement;
-    let content = textAreaEl.textContent.trim();
-
-    // ✅ Prevent duplicate `#` before inserting hashtag
-    if (content.endsWith('#')) {
-      content = content.slice(0, -1).trim();
+    const text = this.textArea?.nativeElement?.innerText.trim();
+    if (text && text.endsWith('#')) {
+      this.textArea.nativeElement.innerText = text.slice(0, -1) + hashtag;
+      this.showHashtagDropdown = false;
+      this.autoExpand();
     }
-    textAreaEl.textContent = content + ' ' + hashtag + ' ';
-    this.showHashtagDropdown = false;
   }
 
   autoExpand() {
+    if (!this.textArea?.nativeElement) return;
     this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');
     this.renderer.setStyle(
       this.textArea.nativeElement,
       'height',
-      this.textArea.nativeElement.scrollHeight + 'px'
+      `${this.textArea.nativeElement.scrollHeight}px`
     );
   }
-
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
@@ -159,23 +208,20 @@ export class RichTextAreaComponent implements AfterViewInit {
   }
 
   saveMessage() {
-    const message = this.textArea.nativeElement.textContent.trim();
+    const message = this.textArea?.nativeElement?.innerText?.trim();
     if (!message || message === this.placeholder) {
       console.log('Message is empty. Not saving.');
       return;
     }
 
-    // ✅ Extract mentions dynamically
     const extractedMentions = message.match(/@\w+/g) || [];
-
-    // ✅ Extract hashtags dynamically
     const extractedHashtags = message.match(/#\w+/g) || [];
 
     const dataToSave: SaveData = {
       text: message,
       file: this.selectedFile ? this.selectedFile.name : null,
-      mentions: extractedMentions, // ✅ Now captures dynamic mentions
-      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags
+      mentions: extractedMentions,
+      hashtags: extractedHashtags,
     };
 
     console.log('Saving Data:', dataToSave);

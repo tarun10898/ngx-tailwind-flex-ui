@@ -3,12 +3,12 @@
     "interfaces": [
         {
             "name": "SaveData",
-            "id": "interface-SaveData-625419f6ce490a04b95f102c845423ffcb2394d050c43ca6d65eb15397bc583dcaa675bea0813ae59508f192b1f2aed1339fc6c089a3ebf4e869d72fcfd77046",
+            "id": "interface-SaveData-f838669df18d0fcf01d7ffc782ecb9eab6fca2fb793c281c26282a8737b6e16fac7996ff96016eb4ab8b50b37777c2c5aaa8083e14369c532199cc7ab8b8641e",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/richTextArea/richTextarea.component.ts",
             "deprecated": false,
             "deprecationMessage": "",
             "type": "interface",
-            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  ViewChild,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea') textArea!: ElementRef;\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    const textAreaEl = this.textArea.nativeElement;\n\n    // ✅ Dynamically update placeholder text in the textarea\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (textAreaEl.textContent.trim() === this.placeholder) {\n      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags are tracked\n    this.showMentionDropdown = textContent.includes('@') && event.key === '@';\n    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';\n\n    // ✅ Close dropdowns if space or enter is pressed\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags trigger the dropdown correctly\n    this.showMentionDropdown = textContent.includes('@');\n    this.showHashtagDropdown = textContent.includes('#');\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  insertEmoji(emoji: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    textAreaEl.textContent += emoji;\n    this.showEmojiPicker = false;\n    this.autoExpand();\n  }\n\n  selectMention(mention: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `@` before inserting mention\n    if (content.endsWith('@')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + mention + ' ';\n    this.showMentionDropdown = false;\n  }\n\n  selectHashtag(hashtag: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `#` before inserting hashtag\n    if (content.endsWith('#')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + hashtag + ' ';\n    this.showHashtagDropdown = false;\n  }\n\n  autoExpand() {\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      this.textArea.nativeElement.scrollHeight + 'px'\n    );\n  }\n\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea.nativeElement.textContent.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    // ✅ Extract mentions dynamically\n    const extractedMentions = message.match(/@\\w+/g) || [];\n\n    // ✅ Extract hashtags dynamically\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions, // ✅ Now captures dynamic mentions\n      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
+            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input, ViewChild } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea', { static: false })\n  textArea!: ElementRef<HTMLDivElement>;\n  @ViewChild('mentionDropdown', { static: false })\n  mentionDropdown!: ElementRef<HTMLDivElement>;\n  @ViewChild('hashtagDropdown', { static: false })\n  hashtagDropdown!: ElementRef<HTMLDivElement>;\n\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    if (!this.textArea?.nativeElement) {\n      console.warn('TextArea not initialized.');\n      return;\n    }\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.innerText?.trim()) {\n      textAreaEl.innerText = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';\n    if (textContent === this.placeholder) {\n      this.textArea.nativeElement.innerText = '';\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';\n    if (!textContent) {\n      this.textArea.nativeElement.innerText = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    if (!this.textArea?.nativeElement) return;\n\n    const textContent = this.textArea.nativeElement.innerText.trim();\n    if (!textContent) return;\n\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    if (!this.textArea?.nativeElement) return;\n\n    const textContent = this.textArea.nativeElement.innerText || '';\n    const words = textContent.split(/\\s+/);\n\n    this.showMentionDropdown = false;\n    this.showHashtagDropdown = false;\n\n    // Check all words for mentions and hashtags\n    words.forEach((word) => {\n      if (word.startsWith('@')) {\n        this.showMentionDropdown = true;\n      }\n      if (word.startsWith('#')) {\n        this.showHashtagDropdown = true;\n      }\n    });\n\n    if (this.showMentionDropdown || this.showHashtagDropdown) {\n      this.updateDropdownPosition();\n    }\n  }\n\n  insertEmoji(emoji: string) {\n    if (this.textArea?.nativeElement) {\n      this.textArea.nativeElement.innerText += emoji;\n      this.autoExpand();\n    }\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  updateDropdownPosition() {\n    const selection = window.getSelection();\n    if (!selection || selection.rangeCount === 0) return;\n\n    const range = selection.getRangeAt(0);\n    const rect = range.getBoundingClientRect();\n    const textAreaRect = this.textArea?.nativeElement?.getBoundingClientRect();\n\n    if (!textAreaRect) return;\n\n    if (this.showMentionDropdown && this.mentionDropdown?.nativeElement) {\n      this.renderer.setStyle(\n        this.mentionDropdown.nativeElement,\n        'top',\n        `${rect.bottom - textAreaRect.top}px`\n      );\n      this.renderer.setStyle(\n        this.mentionDropdown.nativeElement,\n        'left',\n        `${rect.left - textAreaRect.left}px`\n      );\n    }\n\n    if (this.showHashtagDropdown && this.hashtagDropdown?.nativeElement) {\n      this.renderer.setStyle(\n        this.hashtagDropdown.nativeElement,\n        'top',\n        `${rect.bottom - textAreaRect.top}px`\n      );\n      this.renderer.setStyle(\n        this.hashtagDropdown.nativeElement,\n        'left',\n        `${rect.left - textAreaRect.left}px`\n      );\n    }\n  }\n\n  selectMention(mention: string) {\n    const text = this.textArea?.nativeElement?.innerText.trim();\n    if (text && text.endsWith('@')) {\n      this.textArea.nativeElement.innerText = text.slice(0, -1) + mention;\n      this.showMentionDropdown = false;\n      this.autoExpand();\n    }\n  }\n\n  selectHashtag(hashtag: string) {\n    const text = this.textArea?.nativeElement?.innerText.trim();\n    if (text && text.endsWith('#')) {\n      this.textArea.nativeElement.innerText = text.slice(0, -1) + hashtag;\n      this.showHashtagDropdown = false;\n      this.autoExpand();\n    }\n  }\n\n  autoExpand() {\n    if (!this.textArea?.nativeElement) return;\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      `${this.textArea.nativeElement.scrollHeight}px`\n    );\n  }\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea?.nativeElement?.innerText?.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    const extractedMentions = message.match(/@\\w+/g) || [];\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions,\n      hashtags: extractedHashtags,\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
             "properties": [
                 {
                     "name": "file",
@@ -18,7 +18,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 15
+                    "line": 14
                 },
                 {
                     "name": "hashtags",
@@ -28,7 +28,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 17
+                    "line": 16
                 },
                 {
                     "name": "mentions",
@@ -38,7 +38,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 16
+                    "line": 15
                 },
                 {
                     "name": "text",
@@ -48,7 +48,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 14
+                    "line": 13
                 }
             ],
             "indexSignatures": [],
@@ -150,7 +150,7 @@
         },
         {
             "name": "RichTextAreaComponent",
-            "id": "component-RichTextAreaComponent-625419f6ce490a04b95f102c845423ffcb2394d050c43ca6d65eb15397bc583dcaa675bea0813ae59508f192b1f2aed1339fc6c089a3ebf4e869d72fcfd77046",
+            "id": "component-RichTextAreaComponent-f838669df18d0fcf01d7ffc782ecb9eab6fca2fb793c281c26282a8737b6e16fac7996ff96016eb4ab8b50b37777c2c5aaa8083e14369c532199cc7ab8b8641e",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/richTextArea/richTextarea.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -173,7 +173,7 @@
                     "defaultValue": "'Type your message...'",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 32,
+                    "line": 37,
                     "type": "string",
                     "decorators": []
                 }
@@ -184,7 +184,7 @@
                     "defaultValue": "new EventEmitter<File>()",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 30,
+                    "line": 35,
                     "type": "EventEmitter"
                 },
                 {
@@ -192,7 +192,7 @@
                     "defaultValue": "new EventEmitter<SaveData>()",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 31,
+                    "line": 36,
                     "type": "EventEmitter"
                 },
                 {
@@ -200,11 +200,30 @@
                     "defaultValue": "new EventEmitter<string>()",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 29,
+                    "line": 34,
                     "type": "EventEmitter"
                 }
             ],
             "propertiesClass": [
+                {
+                    "name": "hashtagDropdown",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ElementRef<HTMLDivElement>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 32,
+                    "decorators": [
+                        {
+                            "name": "ViewChild",
+                            "stringifiedArguments": "'hashtagDropdown', {static: false}"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                },
                 {
                     "name": "hashtagList",
                     "defaultValue": "['#Angular', '#Tailwind', '#Coding']",
@@ -214,7 +233,26 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 39
+                    "line": 44
+                },
+                {
+                    "name": "mentionDropdown",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ElementRef<HTMLDivElement>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 30,
+                    "decorators": [
+                        {
+                            "name": "ViewChild",
+                            "stringifiedArguments": "'mentionDropdown', {static: false}"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
                 },
                 {
                     "name": "mentionList",
@@ -225,7 +263,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 38
+                    "line": 43
                 },
                 {
                     "name": "selectedFile",
@@ -236,7 +274,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 41
+                    "line": 46
                 },
                 {
                     "name": "showEmojiPicker",
@@ -247,7 +285,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 34
+                    "line": 39
                 },
                 {
                     "name": "showHashtagDropdown",
@@ -258,7 +296,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 37
+                    "line": 42
                 },
                 {
                     "name": "showMentionDropdown",
@@ -269,7 +307,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 36
+                    "line": 41
                 },
                 {
                     "name": "showMoreEmojis",
@@ -280,13 +318,13 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 35
+                    "line": 40
                 },
                 {
                     "name": "textArea",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "ElementRef",
+                    "type": "ElementRef<HTMLDivElement>",
                     "indexKey": "",
                     "optional": false,
                     "description": "",
@@ -294,7 +332,7 @@
                     "decorators": [
                         {
                             "name": "ViewChild",
-                            "stringifiedArguments": "'textArea'"
+                            "stringifiedArguments": "'textArea', {static: false}"
                         }
                     ],
                     "modifierKind": [
@@ -309,7 +347,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 144,
+                    "line": 193,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -319,7 +357,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 54,
+                    "line": 61,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -336,7 +374,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 110,
+                    "line": 123,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -357,7 +395,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 45,
+                    "line": 50,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -367,7 +405,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 72,
+                    "line": 79,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -384,7 +422,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 153,
+                    "line": 202,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -405,7 +443,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 68,
+                    "line": 75,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -415,7 +453,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 91,
+                    "line": 96,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -432,7 +470,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 76,
+                    "line": 83,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -453,7 +491,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 61,
+                    "line": 68,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -463,7 +501,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 161,
+                    "line": 210,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -480,7 +518,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 131,
+                    "line": 184,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -508,7 +546,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 118,
+                    "line": 175,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -529,7 +567,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 102,
+                    "line": 130,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -539,7 +577,17 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 106,
+                    "line": 134,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "updateDropdownPosition",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 138,
                     "deprecated": false,
                     "deprecationMessage": ""
                 }
@@ -558,7 +606,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  ViewChild,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea') textArea!: ElementRef;\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    const textAreaEl = this.textArea.nativeElement;\n\n    // ✅ Dynamically update placeholder text in the textarea\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (textAreaEl.textContent.trim() === this.placeholder) {\n      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags are tracked\n    this.showMentionDropdown = textContent.includes('@') && event.key === '@';\n    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';\n\n    // ✅ Close dropdowns if space or enter is pressed\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags trigger the dropdown correctly\n    this.showMentionDropdown = textContent.includes('@');\n    this.showHashtagDropdown = textContent.includes('#');\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  insertEmoji(emoji: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    textAreaEl.textContent += emoji;\n    this.showEmojiPicker = false;\n    this.autoExpand();\n  }\n\n  selectMention(mention: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `@` before inserting mention\n    if (content.endsWith('@')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + mention + ' ';\n    this.showMentionDropdown = false;\n  }\n\n  selectHashtag(hashtag: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `#` before inserting hashtag\n    if (content.endsWith('#')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + hashtag + ' ';\n    this.showHashtagDropdown = false;\n  }\n\n  autoExpand() {\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      this.textArea.nativeElement.scrollHeight + 'px'\n    );\n  }\n\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea.nativeElement.textContent.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    // ✅ Extract mentions dynamically\n    const extractedMentions = message.match(/@\\w+/g) || [];\n\n    // ✅ Extract hashtags dynamically\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions, // ✅ Now captures dynamic mentions\n      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
+            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input, ViewChild } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea', { static: false })\n  textArea!: ElementRef<HTMLDivElement>;\n  @ViewChild('mentionDropdown', { static: false })\n  mentionDropdown!: ElementRef<HTMLDivElement>;\n  @ViewChild('hashtagDropdown', { static: false })\n  hashtagDropdown!: ElementRef<HTMLDivElement>;\n\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    if (!this.textArea?.nativeElement) {\n      console.warn('TextArea not initialized.');\n      return;\n    }\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.innerText?.trim()) {\n      textAreaEl.innerText = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';\n    if (textContent === this.placeholder) {\n      this.textArea.nativeElement.innerText = '';\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textContent = this.textArea?.nativeElement?.innerText?.trim() || '';\n    if (!textContent) {\n      this.textArea.nativeElement.innerText = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    if (!this.textArea?.nativeElement) return;\n\n    const textContent = this.textArea.nativeElement.innerText.trim();\n    if (!textContent) return;\n\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    if (!this.textArea?.nativeElement) return;\n\n    const textContent = this.textArea.nativeElement.innerText || '';\n    const words = textContent.split(/\\s+/);\n\n    this.showMentionDropdown = false;\n    this.showHashtagDropdown = false;\n\n    // Check all words for mentions and hashtags\n    words.forEach((word) => {\n      if (word.startsWith('@')) {\n        this.showMentionDropdown = true;\n      }\n      if (word.startsWith('#')) {\n        this.showHashtagDropdown = true;\n      }\n    });\n\n    if (this.showMentionDropdown || this.showHashtagDropdown) {\n      this.updateDropdownPosition();\n    }\n  }\n\n  insertEmoji(emoji: string) {\n    if (this.textArea?.nativeElement) {\n      this.textArea.nativeElement.innerText += emoji;\n      this.autoExpand();\n    }\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  updateDropdownPosition() {\n    const selection = window.getSelection();\n    if (!selection || selection.rangeCount === 0) return;\n\n    const range = selection.getRangeAt(0);\n    const rect = range.getBoundingClientRect();\n    const textAreaRect = this.textArea?.nativeElement?.getBoundingClientRect();\n\n    if (!textAreaRect) return;\n\n    if (this.showMentionDropdown && this.mentionDropdown?.nativeElement) {\n      this.renderer.setStyle(\n        this.mentionDropdown.nativeElement,\n        'top',\n        `${rect.bottom - textAreaRect.top}px`\n      );\n      this.renderer.setStyle(\n        this.mentionDropdown.nativeElement,\n        'left',\n        `${rect.left - textAreaRect.left}px`\n      );\n    }\n\n    if (this.showHashtagDropdown && this.hashtagDropdown?.nativeElement) {\n      this.renderer.setStyle(\n        this.hashtagDropdown.nativeElement,\n        'top',\n        `${rect.bottom - textAreaRect.top}px`\n      );\n      this.renderer.setStyle(\n        this.hashtagDropdown.nativeElement,\n        'left',\n        `${rect.left - textAreaRect.left}px`\n      );\n    }\n  }\n\n  selectMention(mention: string) {\n    const text = this.textArea?.nativeElement?.innerText.trim();\n    if (text && text.endsWith('@')) {\n      this.textArea.nativeElement.innerText = text.slice(0, -1) + mention;\n      this.showMentionDropdown = false;\n      this.autoExpand();\n    }\n  }\n\n  selectHashtag(hashtag: string) {\n    const text = this.textArea?.nativeElement?.innerText.trim();\n    if (text && text.endsWith('#')) {\n      this.textArea.nativeElement.innerText = text.slice(0, -1) + hashtag;\n      this.showHashtagDropdown = false;\n      this.autoExpand();\n    }\n  }\n\n  autoExpand() {\n    if (!this.textArea?.nativeElement) return;\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      `${this.textArea.nativeElement.scrollHeight}px`\n    );\n  }\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea?.nativeElement?.innerText?.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    const extractedMentions = message.match(/@\\w+/g) || [];\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions,\n      hashtags: extractedHashtags,\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
@@ -580,7 +628,7 @@
                         "deprecationMessage": ""
                     }
                 ],
-                "line": 41,
+                "line": 46,
                 "jsdoctags": [
                     {
                         "name": "renderer",
@@ -975,7 +1023,7 @@
                 "linktype": "component",
                 "name": "RichTextAreaComponent",
                 "coveragePercent": 0,
-                "coverageCount": "0/29",
+                "coverageCount": "0/32",
                 "status": "low"
             },
             {
