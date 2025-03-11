@@ -1,6 +1,62 @@
 {
     "pipes": [],
-    "interfaces": [],
+    "interfaces": [
+        {
+            "name": "SaveData",
+            "id": "interface-SaveData-625419f6ce490a04b95f102c845423ffcb2394d050c43ca6d65eb15397bc583dcaa675bea0813ae59508f192b1f2aed1339fc6c089a3ebf4e869d72fcfd77046",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/richTextArea/richTextarea.component.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  ViewChild,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea') textArea!: ElementRef;\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    const textAreaEl = this.textArea.nativeElement;\n\n    // ✅ Dynamically update placeholder text in the textarea\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (textAreaEl.textContent.trim() === this.placeholder) {\n      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags are tracked\n    this.showMentionDropdown = textContent.includes('@') && event.key === '@';\n    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';\n\n    // ✅ Close dropdowns if space or enter is pressed\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags trigger the dropdown correctly\n    this.showMentionDropdown = textContent.includes('@');\n    this.showHashtagDropdown = textContent.includes('#');\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  insertEmoji(emoji: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    textAreaEl.textContent += emoji;\n    this.showEmojiPicker = false;\n    this.autoExpand();\n  }\n\n  selectMention(mention: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `@` before inserting mention\n    if (content.endsWith('@')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + mention + ' ';\n    this.showMentionDropdown = false;\n  }\n\n  selectHashtag(hashtag: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `#` before inserting hashtag\n    if (content.endsWith('#')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + hashtag + ' ';\n    this.showHashtagDropdown = false;\n  }\n\n  autoExpand() {\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      this.textArea.nativeElement.scrollHeight + 'px'\n    );\n  }\n\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea.nativeElement.textContent.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    // ✅ Extract mentions dynamically\n    const extractedMentions = message.match(/@\\w+/g) || [];\n\n    // ✅ Extract hashtags dynamically\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions, // ✅ Now captures dynamic mentions\n      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
+            "properties": [
+                {
+                    "name": "file",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string | null",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 15
+                },
+                {
+                    "name": "hashtags",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 17
+                },
+                {
+                    "name": "mentions",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 16
+                },
+                {
+                    "name": "text",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 14
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        }
+    ],
     "injectables": [],
     "guards": [],
     "interceptors": [],
@@ -94,7 +150,7 @@
         },
         {
             "name": "RichTextAreaComponent",
-            "id": "component-RichTextAreaComponent-55ad55b66f69110e6a43b222189e14d3f64cb86e3492ce17457383c3102290d96b93bfab79958c19ef327b4c68be7ff9de496e5f64e0366a3d5e72455abc9c28",
+            "id": "component-RichTextAreaComponent-625419f6ce490a04b95f102c845423ffcb2394d050c43ca6d65eb15397bc583dcaa675bea0813ae59508f192b1f2aed1339fc6c089a3ebf4e869d72fcfd77046",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/richTextArea/richTextarea.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -111,14 +167,32 @@
             ],
             "viewProviders": [],
             "hostDirectives": [],
-            "inputsClass": [],
+            "inputsClass": [
+                {
+                    "name": "placeholder",
+                    "defaultValue": "'Type your message...'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 32,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
             "outputsClass": [
                 {
                     "name": "fileAttached",
                     "defaultValue": "new EventEmitter<File>()",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 21,
+                    "line": 30,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "saveData",
+                    "defaultValue": "new EventEmitter<SaveData>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 31,
                     "type": "EventEmitter"
                 },
                 {
@@ -126,21 +200,43 @@
                     "defaultValue": "new EventEmitter<string>()",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 20,
+                    "line": 29,
                     "type": "EventEmitter"
                 }
             ],
             "propertiesClass": [
                 {
-                    "name": "placeholder",
-                    "defaultValue": "'Type your message...'",
+                    "name": "hashtagList",
+                    "defaultValue": "['#Angular', '#Tailwind', '#Coding']",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "string",
+                    "type": "string[]",
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 23
+                    "line": 39
+                },
+                {
+                    "name": "mentionList",
+                    "defaultValue": "['@JohnDoe', '@JaneSmith', '@User123']",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 38
+                },
+                {
+                    "name": "selectedFile",
+                    "defaultValue": "null",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "File | null",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 41
                 },
                 {
                     "name": "showEmojiPicker",
@@ -151,7 +247,40 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 24
+                    "line": 34
+                },
+                {
+                    "name": "showHashtagDropdown",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 37
+                },
+                {
+                    "name": "showMentionDropdown",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 36
+                },
+                {
+                    "name": "showMoreEmojis",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 35
                 },
                 {
                     "name": "textArea",
@@ -161,7 +290,7 @@
                     "indexKey": "",
                     "optional": false,
                     "description": "",
-                    "line": 19,
+                    "line": 28,
                     "decorators": [
                         {
                             "name": "ViewChild",
@@ -175,6 +304,26 @@
             ],
             "methodsClass": [
                 {
+                    "name": "autoExpand",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 144,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "clearPlaceholderIfNeeded",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 54,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
                     "name": "insertEmoji",
                     "args": [
                         {
@@ -187,7 +336,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 55,
+                    "line": 110,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -208,7 +357,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 80,
+                    "line": 45,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -218,7 +367,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 44,
+                    "line": 72,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -235,7 +384,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 73,
+                    "line": 153,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -256,7 +405,17 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 37,
+                    "line": 68,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "onInput",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 91,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -273,7 +432,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 26,
+                    "line": 76,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -289,12 +448,98 @@
                     ]
                 },
                 {
+                    "name": "restorePlaceholderIfEmpty",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 61,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "saveMessage",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 161,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "selectHashtag",
+                    "args": [
+                        {
+                            "name": "hashtag",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 131,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "hashtag",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "selectMention",
+                    "args": [
+                        {
+                            "name": "mention",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 118,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "mention",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "toggleEmojiPicker",
                     "args": [],
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 51,
+                    "line": 102,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "toggleMoreEmojis",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 106,
                     "deprecated": false,
                     "deprecationMessage": ""
                 }
@@ -313,7 +558,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { CommonModule } from '@angular/common';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  ViewChild,\n  AfterViewInit,\n} from '@angular/core';\n\n@Component({\n  selector: 'lib-rich-textarea', // ✅ Fixed selector to start with \"lib\"\n  standalone: true,\n  imports: [CommonModule], // ✅ Ensured CommonModule is imported for *ngIf\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea') textArea!: ElementRef;\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n\n  placeholder = 'Type your message...';\n  showEmojiPicker = false;\n\n  onKeydown(event: KeyboardEvent) {\n    if (event.key === 'Enter' && !event.shiftKey) {\n      event.preventDefault();\n      const message = this.textArea.nativeElement.textContent.trim();\n      if (message && message !== this.placeholder) {\n        this.sendMessage.emit(message);\n        this.textArea.nativeElement.textContent = ''; // Clear after sending\n      }\n    }\n  }\n\n  onFocus() {\n    const textAreaEl = this.textArea?.nativeElement;\n    if (textAreaEl.textContent.trim() === this.placeholder) {\n      textAreaEl.textContent = ''; // Clear placeholder on focus\n    }\n  }\n\n  onBlur() {\n    const textAreaEl = this.textArea?.nativeElement;\n    if (textAreaEl.textContent.trim() === '') {\n      textAreaEl.textContent = this.placeholder; // Restore placeholder if input is empty\n    }\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  insertEmoji(emoji: string) {\n    const textAreaEl = this.textArea?.nativeElement;\n    if (textAreaEl) {\n      const selection = window.getSelection();\n\n      if (selection && selection.rangeCount > 0) {\n        // ✅ Ensure selection exists\n        const range = selection.getRangeAt(0);\n        range.deleteContents();\n        range.insertNode(document.createTextNode(emoji));\n        selection.collapseToEnd();\n      } else {\n        textAreaEl.textContent += emoji;\n      }\n    }\n    this.showEmojiPicker = false;\n  }\n\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.fileAttached.emit(input.files[0]);\n    }\n  }\n\n  ngAfterViewInit() {\n    // Ensure placeholder is set only if text is empty\n    if (!this.textArea.nativeElement.textContent.trim()) {\n      this.textArea.nativeElement.textContent = this.placeholder;\n    }\n  }\n}\n",
+            "sourceCode": "import { CommonModule } from '@angular/common';\nimport { Input } from '@angular/core';\nimport {\n  Component,\n  ElementRef,\n  EventEmitter,\n  Output,\n  ViewChild,\n  AfterViewInit,\n  Renderer2,\n} from '@angular/core';\n\ninterface SaveData {\n  text: string;\n  file: string | null;\n  mentions: string[];\n  hashtags: string[];\n}\n\n@Component({\n  selector: 'lib-rich-textarea',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './richTextarea.component.html',\n  styleUrls: ['./richTextarea.component.css'],\n})\nexport class RichTextAreaComponent implements AfterViewInit {\n  @ViewChild('textArea') textArea!: ElementRef;\n  @Output() sendMessage = new EventEmitter<string>();\n  @Output() fileAttached = new EventEmitter<File>();\n  @Output() saveData = new EventEmitter<SaveData>();\n  @Input() placeholder = 'Type your message...';\n\n  showEmojiPicker = false;\n  showMoreEmojis = false;\n  showMentionDropdown = false;\n  showHashtagDropdown = false;\n  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];\n  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];\n\n  selectedFile: File | null = null;\n\n  constructor(private renderer: Renderer2) {}\n\n  ngAfterViewInit() {\n    const textAreaEl = this.textArea.nativeElement;\n\n    // ✅ Dynamically update placeholder text in the textarea\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  clearPlaceholderIfNeeded() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (textAreaEl.textContent.trim() === this.placeholder) {\n      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present\n    }\n  }\n\n  restorePlaceholderIfEmpty() {\n    const textAreaEl = this.textArea.nativeElement;\n    if (!textAreaEl.textContent.trim()) {\n      textAreaEl.textContent = this.placeholder;\n    }\n  }\n\n  onFocus() {\n    this.clearPlaceholderIfNeeded();\n  }\n\n  onBlur() {\n    this.restorePlaceholderIfEmpty();\n  }\n\n  onKeydown(event: KeyboardEvent) {\n    this.clearPlaceholderIfNeeded();\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags are tracked\n    this.showMentionDropdown = textContent.includes('@') && event.key === '@';\n    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';\n\n    // ✅ Close dropdowns if space or enter is pressed\n    if (event.key === ' ' || event.key === 'Enter') {\n      this.showMentionDropdown = false;\n      this.showHashtagDropdown = false;\n    }\n  }\n\n  onInput() {\n    this.clearPlaceholderIfNeeded();\n    this.autoExpand();\n\n    const textContent = this.textArea.nativeElement.textContent.trim();\n\n    // ✅ Ensure mentions and hashtags trigger the dropdown correctly\n    this.showMentionDropdown = textContent.includes('@');\n    this.showHashtagDropdown = textContent.includes('#');\n  }\n\n  toggleEmojiPicker() {\n    this.showEmojiPicker = !this.showEmojiPicker;\n  }\n\n  toggleMoreEmojis() {\n    this.showMoreEmojis = !this.showMoreEmojis;\n  }\n\n  insertEmoji(emoji: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    textAreaEl.textContent += emoji;\n    this.showEmojiPicker = false;\n    this.autoExpand();\n  }\n\n  selectMention(mention: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `@` before inserting mention\n    if (content.endsWith('@')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + mention + ' ';\n    this.showMentionDropdown = false;\n  }\n\n  selectHashtag(hashtag: string) {\n    this.clearPlaceholderIfNeeded();\n    const textAreaEl = this.textArea.nativeElement;\n    let content = textAreaEl.textContent.trim();\n\n    // ✅ Prevent duplicate `#` before inserting hashtag\n    if (content.endsWith('#')) {\n      content = content.slice(0, -1).trim();\n    }\n    textAreaEl.textContent = content + ' ' + hashtag + ' ';\n    this.showHashtagDropdown = false;\n  }\n\n  autoExpand() {\n    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');\n    this.renderer.setStyle(\n      this.textArea.nativeElement,\n      'height',\n      this.textArea.nativeElement.scrollHeight + 'px'\n    );\n  }\n\n  onFileSelected(event: Event) {\n    const input = event.target as HTMLInputElement;\n    if (input.files?.length) {\n      this.selectedFile = input.files[0];\n      this.fileAttached.emit(this.selectedFile);\n    }\n  }\n\n  saveMessage() {\n    const message = this.textArea.nativeElement.textContent.trim();\n    if (!message || message === this.placeholder) {\n      console.log('Message is empty. Not saving.');\n      return;\n    }\n\n    // ✅ Extract mentions dynamically\n    const extractedMentions = message.match(/@\\w+/g) || [];\n\n    // ✅ Extract hashtags dynamically\n    const extractedHashtags = message.match(/#\\w+/g) || [];\n\n    const dataToSave: SaveData = {\n      text: message,\n      file: this.selectedFile ? this.selectedFile.name : null,\n      mentions: extractedMentions, // ✅ Now captures dynamic mentions\n      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags\n    };\n\n    console.log('Saving Data:', dataToSave);\n    this.saveData.emit(dataToSave);\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
@@ -322,11 +567,37 @@
                 }
             ],
             "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "renderer",
+                        "type": "Renderer2",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 41,
+                "jsdoctags": [
+                    {
+                        "name": "renderer",
+                        "type": "Renderer2",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
             "extends": [],
             "implements": [
                 "AfterViewInit"
             ],
-            "templateData": "<div class=\"p-4 border rounded-lg shadow-md bg-white dark:bg-gray-900\">\n  <!-- Action Buttons (Left-Aligned) -->\n  <div class=\"flex items-center space-x-3 mb-3\">\n    <!-- Send Button -->\n    <button\n      class=\"px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600\"\n      (click)=\"sendMessage.emit(textArea.innerText.trim())\"\n    >\n      Send\n    </button>\n\n    <!-- File Upload -->\n    <label\n      class=\"relative cursor-pointer flex items-center justify-center bg-white text-gray-700 p-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-200 shadow-sm\"\n    >\n      Attach\n      <input\n        type=\"file\"\n        class=\"hidden absolute\"\n        (change)=\"onFileSelected($event)\"\n      />\n    </label>\n\n    <!-- Emoji Picker -->\n    <div class=\"relative\">\n      <!-- Emoji Picker Toggle -->\n      <button class=\"text-xl\" (click)=\"toggleEmojiPicker()\">😀</button>\n\n      <!-- Emoji Picker Dropdown (Right Side of Emoji Button) -->\n      <div\n        *ngIf=\"showEmojiPicker\"\n        class=\"absolute top-0 left-full ml-2 p-2 bg-white border rounded-lg shadow-lg grid grid-cols-4 gap-2 z-50\"\n      >\n        <button class=\"text-xl\" (click)=\"insertEmoji('😊')\">😊</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('😂')\">😂</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('❤️')\">❤️</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('👍')\">👍</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('🔥')\">🔥</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('😍')\">😍</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('😎')\">😎</button>\n        <button class=\"text-xl\" (click)=\"insertEmoji('🎉')\">🎉</button>\n      </div>\n    </div>\n  </div>\n\n  <!-- Text Input Area -->\n  <div\n    #textArea\n    contenteditable=\"true\"\n    class=\"w-full min-h-[100px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n    (keydown)=\"onKeydown($event)\"\n    (focus)=\"onFocus()\"\n    (blur)=\"onBlur()\"\n  ></div>\n</div>\n"
+            "templateData": "<div class=\"p-4 border rounded-lg shadow-md bg-white dark:bg-gray-900\">\n  <!-- Text Input Area -->\n  <div\n    #textArea\n    contenteditable=\"true\"\n    class=\"w-full min-h-[100px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n    (keydown)=\"onKeydown($event)\"\n    (focus)=\"onFocus()\"\n    (blur)=\"onBlur()\"\n    (input)=\"onInput()\"\n    [attr.data-placeholder]=\"placeholder\"\n  >\n    <!-- Mention Dropdown -->\n    <div\n      *ngIf=\"showMentionDropdown\"\n      class=\"absolute bg-white border rounded shadow-md p-2 mt-1\"\n    >\n      <button\n        *ngFor=\"let mention of mentionList\"\n        (click)=\"selectMention(mention)\"\n        class=\"block p-1 hover:bg-gray-200\"\n      >\n        {{ mention }}\n      </button>\n    </div>\n\n    <!-- Hashtag Dropdown -->\n    <div\n      *ngIf=\"showHashtagDropdown\"\n      class=\"absolute bg-white border rounded shadow-md p-2 mt-1\"\n    >\n      <button\n        *ngFor=\"let hashtag of hashtagList\"\n        (click)=\"selectHashtag(hashtag)\"\n        class=\"block p-1 hover:bg-gray-200\"\n      >\n        {{ hashtag }}\n      </button>\n    </div>\n  </div>\n\n  <!-- Action Buttons Row -->\n  <div class=\"flex items-center justify-between mt-3\">\n    <!-- Emoji Button (LEFT SIDE) -->\n    <div class=\"relative flex items-center\">\n      <button\n        class=\"text-2xl p-2 rounded-full hover:bg-gray-200\"\n        (click)=\"toggleEmojiPicker()\"\n      >\n        😊\n      </button>\n\n      <!-- ✅ Fix: Emoji Picker is Now Positioned to the RIGHT of the Button -->\n      <div\n        *ngIf=\"showEmojiPicker\"\n        class=\"absolute top-0 left-full ml-2 bg-white border rounded-lg shadow-lg p-2 w-56 z-50\"\n      >\n        <!-- First Row of Emojis -->\n        <div class=\"grid grid-cols-6 gap-2\">\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n            (click)=\"insertEmoji('😊')\"\n          >\n            😊\n          </button>\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n            (click)=\"insertEmoji('😂')\"\n          >\n            😂\n          </button>\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n            (click)=\"insertEmoji('❤️')\"\n          >\n            ❤️\n          </button>\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n            (click)=\"insertEmoji('🔥')\"\n          >\n            🔥\n          </button>\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n            (click)=\"insertEmoji('👍')\"\n          >\n            👍\n          </button>\n          <button\n            class=\"text-xl p-2 hover:bg-gray-100 rounded-lg text-blue-500 font-bold\"\n            (click)=\"toggleMoreEmojis()\"\n          >\n            +\n          </button>\n        </div>\n\n        <!-- Extra Emojis with Horizontal Scroll Below -->\n        <div *ngIf=\"showMoreEmojis\" class=\"overflow-x-auto mt-2 border-t pt-2\">\n          <div class=\"flex space-x-2 w-max\">\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😍')\"\n            >\n              😍\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😎')\"\n            >\n              😎\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('🎉')\"\n            >\n              🎉\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('🥳')\"\n            >\n              🥳\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('🤩')\"\n            >\n              🤩\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😆')\"\n            >\n              😆\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😜')\"\n            >\n              😜\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('🤔')\"\n            >\n              🤔\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😭')\"\n            >\n              😭\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('😏')\"\n            >\n              😏\n            </button>\n            <button\n              class=\"text-xl p-2 hover:bg-gray-100 rounded-lg\"\n              (click)=\"insertEmoji('🙌')\"\n            >\n              🙌\n            </button>\n          </div>\n        </div>\n      </div>\n    </div>\n\n    <!-- Attach & Save Buttons -->\n    <div class=\"flex space-x-2\">\n      <label\n        class=\"px-4 py-2 bg-gray-200 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-300\"\n      >\n        Attach\n        <input type=\"file\" class=\"hidden\" (change)=\"onFileSelected($event)\" />\n      </label>\n      <button\n        class=\"px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600\"\n        (click)=\"saveMessage()\"\n      >\n        Save\n      </button>\n    </div>\n  </div>\n</div>\n"
         }
     ],
     "modules": [],
@@ -704,7 +975,16 @@
                 "linktype": "component",
                 "name": "RichTextAreaComponent",
                 "coveragePercent": 0,
-                "coverageCount": "0/13",
+                "coverageCount": "0/29",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/richTextArea/richTextarea.component.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "SaveData",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
                 "status": "low"
             }
         ]

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { Input } from '@angular/core';
 import {
   Component,
   ElementRef,
@@ -6,12 +7,20 @@ import {
   Output,
   ViewChild,
   AfterViewInit,
+  Renderer2,
 } from '@angular/core';
 
+interface SaveData {
+  text: string;
+  file: string | null;
+  mentions: string[];
+  hashtags: string[];
+}
+
 @Component({
-  selector: 'lib-rich-textarea', // ✅ Fixed selector to start with "lib"
+  selector: 'lib-rich-textarea',
   standalone: true,
-  imports: [CommonModule], // ✅ Ensured CommonModule is imported for *ngIf
+  imports: [CommonModule],
   templateUrl: './richTextarea.component.html',
   styleUrls: ['./richTextarea.component.css'],
 })
@@ -19,47 +28,75 @@ export class RichTextAreaComponent implements AfterViewInit {
   @ViewChild('textArea') textArea!: ElementRef;
   @Output() sendMessage = new EventEmitter<string>();
   @Output() fileAttached = new EventEmitter<File>();
+  @Output() saveData = new EventEmitter<SaveData>();
+  @Input() placeholder = 'Type your message...';
 
-  placeholder = 'Type your message...';
   showEmojiPicker = false;
   showMoreEmojis = false;
+  showMentionDropdown = false;
+  showHashtagDropdown = false;
+  mentionList: string[] = ['@JohnDoe', '@JaneSmith', '@User123'];
+  hashtagList: string[] = ['#Angular', '#Tailwind', '#Coding'];
 
-  /** ✅ Clears the placeholder when the user focuses or enters content */
-  clearPlaceholderIfNeeded() {
-    const textAreaEl = this.textArea.nativeElement;
-    if (textAreaEl.textContent.trim() === this.placeholder) {
-      textAreaEl.textContent = '';
-    }
-  }
+  selectedFile: File | null = null;
 
-  /** ✅ Restores placeholder only if text is completely empty */
-  restorePlaceholderIfEmpty() {
+  constructor(private renderer: Renderer2) {}
+
+  ngAfterViewInit() {
     const textAreaEl = this.textArea.nativeElement;
-    if (textAreaEl.textContent.trim() === '') {
+
+    // ✅ Dynamically update placeholder text in the textarea
+    if (!textAreaEl.textContent.trim()) {
       textAreaEl.textContent = this.placeholder;
     }
   }
 
-  onKeydown(event: KeyboardEvent) {
-    this.clearPlaceholderIfNeeded(); // ✅ Clears placeholder when user types
+  clearPlaceholderIfNeeded() {
+    const textAreaEl = this.textArea.nativeElement;
+    if (textAreaEl.textContent.trim() === this.placeholder) {
+      textAreaEl.textContent = ''; // ✅ Clears the placeholder only if it's still present
+    }
+  }
 
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      const message = this.textArea.nativeElement.textContent.trim();
-      if (message && message !== this.placeholder) {
-        this.sendMessage.emit(message);
-        this.textArea.nativeElement.textContent = ''; // ✅ Clears text after sending
-        this.restorePlaceholderIfEmpty(); // ✅ Restores placeholder after sending
-      }
+  restorePlaceholderIfEmpty() {
+    const textAreaEl = this.textArea.nativeElement;
+    if (!textAreaEl.textContent.trim()) {
+      textAreaEl.textContent = this.placeholder;
     }
   }
 
   onFocus() {
-    this.clearPlaceholderIfNeeded(); // ✅ Clears placeholder on focus
+    this.clearPlaceholderIfNeeded();
   }
 
   onBlur() {
-    this.restorePlaceholderIfEmpty(); // ✅ Restores placeholder on blur if empty
+    this.restorePlaceholderIfEmpty();
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    this.clearPlaceholderIfNeeded();
+    const textContent = this.textArea.nativeElement.textContent.trim();
+
+    // ✅ Ensure mentions and hashtags are tracked
+    this.showMentionDropdown = textContent.includes('@') && event.key === '@';
+    this.showHashtagDropdown = textContent.includes('#') && event.key === '#';
+
+    // ✅ Close dropdowns if space or enter is pressed
+    if (event.key === ' ' || event.key === 'Enter') {
+      this.showMentionDropdown = false;
+      this.showHashtagDropdown = false;
+    }
+  }
+
+  onInput() {
+    this.clearPlaceholderIfNeeded();
+    this.autoExpand();
+
+    const textContent = this.textArea.nativeElement.textContent.trim();
+
+    // ✅ Ensure mentions and hashtags trigger the dropdown correctly
+    this.showMentionDropdown = textContent.includes('@');
+    this.showHashtagDropdown = textContent.includes('#');
   }
 
   toggleEmojiPicker() {
@@ -71,35 +108,77 @@ export class RichTextAreaComponent implements AfterViewInit {
   }
 
   insertEmoji(emoji: string) {
+    this.clearPlaceholderIfNeeded();
     const textAreaEl = this.textArea.nativeElement;
-    this.clearPlaceholderIfNeeded(); // ✅ Clears placeholder when an emoji is inserted
+    textAreaEl.textContent += emoji;
+    this.showEmojiPicker = false;
+    this.autoExpand();
+  }
 
-    if (textAreaEl) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(document.createTextNode(emoji));
-        selection.collapseToEnd();
-      } else {
-        textAreaEl.textContent += emoji;
-      }
+  selectMention(mention: string) {
+    this.clearPlaceholderIfNeeded();
+    const textAreaEl = this.textArea.nativeElement;
+    let content = textAreaEl.textContent.trim();
+
+    // ✅ Prevent duplicate `@` before inserting mention
+    if (content.endsWith('@')) {
+      content = content.slice(0, -1).trim();
     }
+    textAreaEl.textContent = content + ' ' + mention + ' ';
+    this.showMentionDropdown = false;
+  }
 
-    this.showEmojiPicker = false; // ✅ Close emoji picker after selection
+  selectHashtag(hashtag: string) {
+    this.clearPlaceholderIfNeeded();
+    const textAreaEl = this.textArea.nativeElement;
+    let content = textAreaEl.textContent.trim();
+
+    // ✅ Prevent duplicate `#` before inserting hashtag
+    if (content.endsWith('#')) {
+      content = content.slice(0, -1).trim();
+    }
+    textAreaEl.textContent = content + ' ' + hashtag + ' ';
+    this.showHashtagDropdown = false;
+  }
+
+  autoExpand() {
+    this.renderer.setStyle(this.textArea.nativeElement, 'height', 'auto');
+    this.renderer.setStyle(
+      this.textArea.nativeElement,
+      'height',
+      this.textArea.nativeElement.scrollHeight + 'px'
+    );
   }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
-      this.fileAttached.emit(input.files[0]);
+      this.selectedFile = input.files[0];
+      this.fileAttached.emit(this.selectedFile);
     }
   }
 
-  ngAfterViewInit() {
-    // ✅ Ensure placeholder is set only if text is empty
-    if (!this.textArea.nativeElement.textContent.trim()) {
-      this.textArea.nativeElement.textContent = this.placeholder;
+  saveMessage() {
+    const message = this.textArea.nativeElement.textContent.trim();
+    if (!message || message === this.placeholder) {
+      console.log('Message is empty. Not saving.');
+      return;
     }
+
+    // ✅ Extract mentions dynamically
+    const extractedMentions = message.match(/@\w+/g) || [];
+
+    // ✅ Extract hashtags dynamically
+    const extractedHashtags = message.match(/#\w+/g) || [];
+
+    const dataToSave: SaveData = {
+      text: message,
+      file: this.selectedFile ? this.selectedFile.name : null,
+      mentions: extractedMentions, // ✅ Now captures dynamic mentions
+      hashtags: extractedHashtags, // ✅ Now captures dynamic hashtags
+    };
+
+    console.log('Saving Data:', dataToSave);
+    this.saveData.emit(dataToSave);
   }
 }

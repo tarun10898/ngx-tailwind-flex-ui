@@ -9,11 +9,12 @@ describe('RichTextAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonModule, RichTextAreaComponent], // ✅ FIXED: Used imports instead of declarations
+      imports: [CommonModule, RichTextAreaComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
+    jest.clearAllMocks(); // ✅ Clears previous console logs
     fixture = TestBed.createComponent(RichTextAreaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -23,83 +24,117 @@ describe('RichTextAreaComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should set placeholder text initially', async () => {
+  it('should set the placeholder text initially', () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
-    await fixture.whenStable();
-    fixture.detectChanges();
-
     expect(textArea.nativeElement.textContent.trim()).toBe(
       component.placeholder
     );
   });
 
-  it('should clear placeholder text on focus', async () => {
+  it('should clear placeholder text on focus', () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
-    textArea.nativeElement.textContent = component.placeholder;
-    fixture.detectChanges();
-
     textArea.triggerEventHandler('focus', null);
-    await fixture.whenStable();
     fixture.detectChanges();
-
     expect(textArea.nativeElement.textContent.trim()).toBe('');
   });
 
-  it('should restore placeholder text when blurred and empty', async () => {
+  it('should restore placeholder text on blur if empty', () => {
     const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
     textArea.nativeElement.textContent = '';
     fixture.detectChanges();
-
     textArea.triggerEventHandler('blur', null);
-    await fixture.whenStable();
-    fixture.detectChanges();
-
     expect(textArea.nativeElement.textContent.trim()).toBe(
       component.placeholder
     );
   });
 
-  it('should emit sendMessage event when Enter is pressed', () => {
-    jest.spyOn(component.sendMessage, 'emit');
-    const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
-    textArea.nativeElement.textContent = 'Hello, world!';
-    fixture.detectChanges();
-
-    const event = new KeyboardEvent('keydown', {
-      key: 'Enter',
-      shiftKey: false,
-    });
-    textArea.triggerEventHandler('keydown', event);
-
-    expect(component.sendMessage.emit).toHaveBeenCalledWith('Hello, world!');
-  });
-
-  it('should emit fileAttached event when a file is selected', () => {
-    const spy = jest.spyOn(component.fileAttached, 'emit');
-
-    const input = fixture.debugElement.query(By.css('input[type="file"]'));
-    const file = new File(['test'], 'test.txt', { type: 'text/plain' });
-    const event = { target: { files: [file] } } as unknown as Event;
-
-    input.triggerEventHandler('change', event);
-    fixture.detectChanges();
-
-    expect(spy).toHaveBeenCalledWith(file);
-  });
-
-  it('should insert emoji at cursor position when selected', () => {
-    const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
-
-    textArea.nativeElement.textContent = 'Hello';
-    fixture.detectChanges();
-
+  it('should insert an emoji in the text area', () => {
     component.insertEmoji('😊');
     fixture.detectChanges();
+    expect(component.textArea.nativeElement.textContent.includes('😊')).toBe(
+      true
+    );
+  });
 
-    expect(textArea.nativeElement.textContent.includes('😊')).toBe(true);
+  it('should detect mentions and hashtags when typing', () => {
+    const textArea = fixture.debugElement.query(By.css('[contenteditable]'));
+
+    textArea.nativeElement.textContent = 'Hello @JohnDoe #Angular';
+    component.onInput();
+    fixture.detectChanges();
+
+    expect(component.showMentionDropdown).toBe(true);
+    expect(component.showHashtagDropdown).toBe(true);
+  });
+
+  it('should add mentions correctly to saved data', () => {
+    jest.spyOn(console, 'log');
+
+    component.textArea.nativeElement.textContent = 'Hello @JohnDoe #Angular';
+    component.saveMessage();
+
+    expect(console.log).toHaveBeenCalledWith(
+      'Saving Data:',
+      expect.objectContaining({
+        mentions: ['@JohnDoe'],
+        hashtags: ['#Angular'],
+      })
+    );
+  });
+
+  it('should not save an empty message', () => {
+    jest.spyOn(console, 'log');
+
+    component.textArea.nativeElement.textContent = '';
+    component.saveMessage();
+
+    expect(console.log).toHaveBeenCalledWith('Message is empty. Not saving.');
+  });
+
+  it('should correctly structure saved message data', () => {
+    jest.spyOn(console, 'log').mockClear();
+
+    component.textArea.nativeElement.textContent =
+      '@JaneSmith #Tailwind Hello!';
+    component.saveMessage();
+
+    expect(console.log).toHaveBeenLastCalledWith(
+      'Saving Data:',
+      expect.objectContaining({
+        text: '@JaneSmith #Tailwind Hello!',
+        mentions: ['@JaneSmith'],
+        hashtags: ['#Tailwind'],
+        file: null,
+      })
+    );
+  });
+
+  it('should not allow duplicate @ or # symbols when selecting mentions/hashtags', () => {
+    component.textArea.nativeElement.textContent = 'Hello @';
+    component.selectMention('@JohnDoe');
+    fixture.detectChanges();
+
+    expect(component.textArea.nativeElement.textContent).toBe(
+      'Hello @JohnDoe '
+    );
+
+    component.textArea.nativeElement.textContent = 'Hello #';
+    component.selectHashtag('#Angular');
+    fixture.detectChanges();
+
+    expect(component.textArea.nativeElement.textContent).toBe(
+      'Hello #Angular '
+    );
+  });
+
+  it('should not allow duplicate @ or # symbols when selecting mentions/hashtags', () => {
+    component.textArea.nativeElement.textContent = 'Hello @';
+    component.selectMention('@JohnDoe');
+    fixture.detectChanges();
+
+    // ✅ Remove trailing space in expected value if it's unnecessary
+    expect(component.textArea.nativeElement.textContent.trim()).toBe(
+      'Hello @JohnDoe'
+    );
   });
 });

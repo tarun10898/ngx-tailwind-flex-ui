@@ -7,12 +7,42 @@
     (keydown)="onKeydown($event)"
     (focus)="onFocus()"
     (blur)="onBlur()"
-  ></div>
+    (input)="onInput()"
+    [attr.data-placeholder]="placeholder"
+  >
+    <!-- Mention Dropdown -->
+    <div
+      *ngIf="showMentionDropdown"
+      class="absolute bg-white border rounded shadow-md p-2 mt-1"
+    >
+      <button
+        *ngFor="let mention of mentionList"
+        (click)="selectMention(mention)"
+        class="block p-1 hover:bg-gray-200"
+      >
+        {{ mention }}
+      </button>
+    </div>
 
-  <!-- Action Buttons -->
+    <!-- Hashtag Dropdown -->
+    <div
+      *ngIf="showHashtagDropdown"
+      class="absolute bg-white border rounded shadow-md p-2 mt-1"
+    >
+      <button
+        *ngFor="let hashtag of hashtagList"
+        (click)="selectHashtag(hashtag)"
+        class="block p-1 hover:bg-gray-200"
+      >
+        {{ hashtag }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Action Buttons Row -->
   <div class="flex items-center justify-between mt-3">
     <!-- Emoji Button (LEFT SIDE) -->
-    <div class="relative">
+    <div class="relative flex items-center">
       <button
         class="text-2xl p-2 rounded-full hover:bg-gray-200"
         (click)="toggleEmojiPicker()"
@@ -20,11 +50,12 @@
         😊
       </button>
 
-      <!-- Emoji Picker Dropdown (RIGHT SIDE of Button) -->
+      <!-- ✅ Fix: Emoji Picker is Now Positioned to the RIGHT of the Button -->
       <div
         *ngIf="showEmojiPicker"
-        class="absolute top-0 left-full ml-2 bg-white border rounded-lg shadow-lg p-2 w-56"
+        class="absolute top-0 left-full ml-2 bg-white border rounded-lg shadow-lg p-2 w-56 z-50"
       >
+        <!-- First Row of Emojis -->
         <div class="grid grid-cols-6 gap-2">
           <button
             class="text-xl p-2 hover:bg-gray-100 rounded-lg"
@@ -64,82 +95,81 @@
           </button>
         </div>
 
-        <!-- More Emojis (Expands below when `+` is clicked) -->
-        <div
-          *ngIf="showMoreEmojis"
-          class="grid grid-cols-6 gap-2 pt-2 border-t mt-2"
-        >
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😍')"
-          >
-            😍
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😎')"
-          >
-            😎
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🎉')"
-          >
-            🎉
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🥳')"
-          >
-            🥳
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🤩')"
-          >
-            🤩
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😆')"
-          >
-            😆
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😜')"
-          >
-            😜
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🤔')"
-          >
-            🤔
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😭')"
-          >
-            😭
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😏')"
-          >
-            😏
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🙌')"
-          >
-            🙌
-          </button>
+        <!-- Extra Emojis with Horizontal Scroll Below -->
+        <div *ngIf="showMoreEmojis" class="overflow-x-auto mt-2 border-t pt-2">
+          <div class="flex space-x-2 w-max">
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😍')"
+            >
+              😍
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😎')"
+            >
+              😎
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('🎉')"
+            >
+              🎉
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('🥳')"
+            >
+              🥳
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('🤩')"
+            >
+              🤩
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😆')"
+            >
+              😆
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😜')"
+            >
+              😜
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('🤔')"
+            >
+              🤔
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😭')"
+            >
+              😭
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('😏')"
+            >
+              😏
+            </button>
+            <button
+              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
+              (click)="insertEmoji('🙌')"
+            >
+              🙌
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Send & Attach Buttons (RIGHT SIDE) -->
+    <!-- Attach & Save Buttons -->
     <div class="flex space-x-2">
       <label
         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-300"
@@ -147,12 +177,11 @@
         Attach
         <input type="file" class="hidden" (change)="onFileSelected($event)" />
       </label>
-
       <button
         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        (click)="sendMessage.emit(textArea.innerText.trim())"
+        (click)="saveMessage()"
       >
-        Send
+        Save
       </button>
     </div>
   </div>
