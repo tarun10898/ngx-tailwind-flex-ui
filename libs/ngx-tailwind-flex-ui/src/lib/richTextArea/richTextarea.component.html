@@ -1,188 +1,268 @@
-<div class="p-4 border rounded-lg shadow-md bg-white dark:bg-gray-900">
-  <!-- Text Input Area -->
-  <div
-    #textArea
-    contenteditable="true"
-    class="w-full min-h-[100px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    (keydown)="onKeydown($event)"
-    (focus)="onFocus()"
-    (blur)="onBlur()"
-    (input)="onInput()"
-    [attr.data-placeholder]="placeholder"
-  >
-    <!-- Mention Dropdown -->
-    <div
-      *ngIf="showMentionDropdown"
-      class="absolute bg-white border rounded shadow-md p-2 mt-1"
+<div
+  class="rich-textarea-container"
+  [ngClass]="{
+    'dark-theme': theme === 'dark',
+    'light-theme': theme === 'light'
+  }"
+>
+  <!-- Theme Toggle -->
+  <div class="p-2 flex justify-end">
+    <button
+      class="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+      (click)="toggleTheme()"
+      aria-label="Toggle dark/light mode"
     >
-      <button
-        *ngFor="let mention of mentionList"
-        (click)="selectMention(mention)"
-        class="block p-1 hover:bg-gray-200"
-      >
-        {{ mention }}
-      </button>
-    </div>
-
-    <!-- Hashtag Dropdown -->
-    <div
-      *ngIf="showHashtagDropdown"
-      class="absolute bg-white border rounded shadow-md p-2 mt-1"
-    >
-      <button
-        *ngFor="let hashtag of hashtagList"
-        (click)="selectHashtag(hashtag)"
-        class="block p-1 hover:bg-gray-200"
-      >
-        {{ hashtag }}
-      </button>
-    </div>
+      {{ theme === 'dark' ? '☀️' : '🌙' }}
+    </button>
   </div>
 
-  <!-- Action Buttons Row -->
-  <div class="flex items-center justify-between mt-3">
-    <!-- Emoji Button (LEFT SIDE) -->
-    <div class="relative flex items-center">
-      <button
-        class="text-2xl p-2 rounded-full hover:bg-gray-200"
-        (click)="toggleEmojiPicker()"
-      >
-        😊
-      </button>
+  <!-- Tab Navigation -->
+  <div
+    class="flex border-b"
+    [ngClass]="{
+      'border-gray-700': theme === 'dark',
+      'border-gray-300': theme === 'light'
+    }"
+  >
+    <button
+      class="px-4 py-2 text-sm font-medium"
+      [class.bg-gray-800]="activeTab === 'write' && theme === 'dark'"
+      [class.bg-gray-200]="activeTab === 'write' && theme === 'light'"
+      [class.text-blue-400]="activeTab === 'write'"
+      (click)="switchTab('write')"
+      aria-label="Switch to Write tab"
+    >
+      Write
+    </button>
+    <button
+      class="px-4 py-2 text-sm font-medium"
+      [class.bg-gray-800]="activeTab === 'preview' && theme === 'dark'"
+      [class.bg-gray-200]="activeTab === 'preview' && theme === 'light'"
+      [class.text-blue-400]="activeTab === 'preview'"
+      (click)="switchTab('preview')"
+      aria-label="Switch to Preview tab"
+    >
+      Preview
+    </button>
+  </div>
 
-      <!-- ✅ Fix: Emoji Picker is Now Positioned to the RIGHT of the Button -->
+  <!-- Content Area -->
+  <div class="p-4">
+    <!-- Write Tab -->
+    <div *ngIf="activeTab === 'write'">
+      <!-- Toolbar -->
+      <div
+        class="flex items-center space-x-2 mb-2 bg-gray-800 dark:bg-gray-800 light:bg-gray-800 p-2 rounded-t"
+      >
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('# ')"
+          title="Heading (Ctrl+H)"
+          aria-label="Add heading"
+        >
+          H
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('**')"
+          title="Bold (Ctrl+B)"
+          aria-label="Bold text"
+        >
+          <b>B</b>
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('_')"
+          title="Italic (Ctrl+I)"
+          aria-label="Italic text"
+        >
+          <i>I</i>
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('`')"
+          title="Code (Ctrl+`)"
+          aria-label="Code text"
+        >
+          <code>&lt;/&gt;</code>
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('[](url)')"
+          title="Link"
+          aria-label="Add link"
+        >
+          🔗
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('> ')"
+          title="Quote"
+          aria-label="Add quote"
+        >
+          ❝
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('```')"
+          title="Code Block"
+          aria-label="Add code block"
+        >
+          💻
+        </button>
+        <button
+          class="toolbar-button"
+          (click)="applyFormatting('~~')"
+          title="Strikethrough (Ctrl+K)"
+          aria-label="Strikethrough text"
+        >
+          <s>S</s>
+        </button>
+        <div class="flex-1"></div>
+        <!-- Spacer -->
+        <button
+          #emojiButton
+          class="toolbar-button"
+          (click)="toggleEmojiPicker()"
+          title="Emoji"
+          aria-label="Toggle emoji picker"
+        >
+          😊
+        </button>
+        <label class="toolbar-button cursor-pointer" aria-label="Attach file">
+          📎
+          <input type="file" class="hidden" (change)="onFileSelected($event)" />
+        </label>
+        <button
+          class="toolbar-button"
+          (click)="saveMessage()"
+          title="Send"
+          aria-label="Send message"
+        >
+          ➡️
+        </button>
+      </div>
+
+      <!-- Text Area -->
+      <div
+        #textArea
+        contenteditable="true"
+        class="w-full min-h-[200px] border rounded-b p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 light:bg-white light:text-gray-800 light:border-gray-300"
+        (keydown)="onKeydown($event)"
+        (focus)="onFocus()"
+        (blur)="onBlur()"
+        (input)="onInput()"
+        [attr.data-placeholder]="placeholder"
+        [attr.aria-label]="placeholder"
+      ></div>
+
+      <!-- Dropdown Container -->
+      <div class="relative">
+        <div
+          #mentionDropdown
+          *ngIf="showMentionDropdown"
+          class="absolute bg-gray-800 dark:bg-gray-800 light:bg-white border border-gray-700 dark:border-gray-700 light:border-gray-300 rounded shadow-md p-2 mt-1 z-10"
+        >
+          <button
+            *ngFor="let mention of mentionList"
+            (click)="selectMention(mention)"
+            class="block p-1 hover:bg-gray-700 dark:hover:bg-gray-700 light:hover:bg-gray-200 w-full text-left text-gray-200 dark:text-gray-200 light:text-gray-800"
+            [attr.aria-label]="'Select mention ' + mention"
+          >
+            {{ mention }}
+          </button>
+        </div>
+        <div
+          #hashtagDropdown
+          *ngIf="showHashtagDropdown"
+          class="absolute bg-gray-800 dark:bg-gray-800 light:bg-white border border-gray-700 dark:border-gray-700 light:border-gray-300 rounded shadow-md p-2 mt-1 z-10"
+        >
+          <button
+            *ngFor="let hashtag of hashtagList"
+            (click)="selectHashtag(hashtag)"
+            class="block p-1 hover:bg-gray-700 dark:hover:bg-gray-700 light:hover:bg-gray-200 w-full text-left text-gray-200 dark:text-gray-200 light:text-gray-800"
+            [attr.aria-label]="'Select hashtag ' + hashtag"
+          >
+            {{ hashtag }}
+          </button>
+        </div>
+        <div
+          #commandDropdown
+          *ngIf="showCommandDropdown"
+          class="absolute bg-gray-800 dark:bg-gray-800 light:bg-white border border-gray-700 dark:border-gray-700 light:border-gray-300 rounded shadow-md p-2 mt-1 z-10"
+        >
+          <button
+            *ngFor="let command of commandList"
+            (click)="selectCommand(command)"
+            class="block p-1 hover:bg-gray-700 dark:hover:bg-gray-700 light:hover:bg-gray-200 w-full text-left text-gray-200 dark:text-gray-200 light:text-gray-800"
+            [attr.aria-label]="'Select command ' + command"
+          >
+            {{ command }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Emoji Picker -->
       <div
         *ngIf="showEmojiPicker"
-        class="absolute top-0 left-full ml-2 bg-white border rounded-lg shadow-lg p-2 w-56 z-50"
+        class="emoji-picker absolute"
+        [ngStyle]="emojiPickerStyles"
       >
-        <!-- First Row of Emojis -->
         <div class="grid grid-cols-6 gap-2">
           <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😊')"
+            *ngFor="let emoji of ['😊', '😂', '❤️', '🔥', '👍']"
+            class="text-xl p-1"
+            (click)="insertEmoji(emoji)"
+            [attr.aria-label]="'Insert emoji ' + emoji"
           >
-            😊
+            {{ emoji }}
           </button>
           <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('😂')"
-          >
-            😂
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('❤️')"
-          >
-            ❤️
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('🔥')"
-          >
-            🔥
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-            (click)="insertEmoji('👍')"
-          >
-            👍
-          </button>
-          <button
-            class="text-xl p-2 hover:bg-gray-100 rounded-lg text-blue-500 font-bold"
+            class="text-xl p-1 text-blue-400 hover:bg-gray-700 dark:hover:bg-gray-700 light:hover:bg-gray-200 rounded"
             (click)="toggleMoreEmojis()"
+            aria-label="Show more emojis"
           >
             +
           </button>
         </div>
-
-        <!-- Extra Emojis with Horizontal Scroll Below -->
-        <div *ngIf="showMoreEmojis" class="overflow-x-auto mt-2 border-t pt-2">
+        <div
+          *ngIf="showMoreEmojis"
+          class="overflow-x-auto mt-2 border-t border-gray-700 dark:border-gray-700 light:border-gray-300 pt-2"
+        >
           <div class="flex space-x-2 w-max">
             <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😍')"
+              *ngFor="
+                let emoji of [
+                  '😍',
+                  '😎',
+                  '🎉',
+                  '🥳',
+                  '🤩',
+                  '😆',
+                  '😜',
+                  '🤔',
+                  '😭',
+                  '😏',
+                  '🙌'
+                ]
+              "
+              class="text-xl p-1"
+              (click)="insertEmoji(emoji)"
+              [attr.aria-label]="'Insert emoji ' + emoji"
             >
-              😍
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😎')"
-            >
-              😎
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('🎉')"
-            >
-              🎉
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('🥳')"
-            >
-              🥳
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('🤩')"
-            >
-              🤩
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😆')"
-            >
-              😆
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😜')"
-            >
-              😜
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('🤔')"
-            >
-              🤔
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😭')"
-            >
-              😭
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('😏')"
-            >
-              😏
-            </button>
-            <button
-              class="text-xl p-2 hover:bg-gray-100 rounded-lg"
-              (click)="insertEmoji('🙌')"
-            >
-              🙌
+              {{ emoji }}
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Attach & Save Buttons -->
-    <div class="flex space-x-2">
-      <label
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-300"
-      >
-        Attach
-        <input type="file" class="hidden" (change)="onFileSelected($event)" />
-      </label>
-      <button
-        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        (click)="saveMessage()"
-      >
-        Save
-      </button>
+    <!-- Preview Tab (Placeholder) -->
+    <div
+      *ngIf="activeTab === 'preview'"
+      class="min-h-[200px] bg-gray-800 dark:bg-gray-800 light:bg-white border border-gray-700 dark:border-gray-700 light:border-gray-300 rounded p-3 text-gray-200 dark:text-gray-200 light:text-gray-800"
+    >
+      Preview content will be rendered here (not implemented).
     </div>
   </div>
 </div>
