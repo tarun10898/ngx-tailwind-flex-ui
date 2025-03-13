@@ -1,0 +1,108 @@
+.rich-textarea-container {
+  width: 100%;
+  max-width: 48rem; /* max-w-3xl */
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+}
+
+.dark-theme {
+  background-color: #111827; /* bg-gray-900 */
+  color: #e5e7eb; /* text-gray-200 */
+}
+
+.light-theme {
+  background-color: #f3f4f6; /* bg-gray-100 */
+  color: #1f2937; /* text-gray-800 */
+}
+
+/* Toolbar buttons */
+.toolbar-button {
+  padding: 0.25rem; /* p-1 */
+  border-radius: 0.25rem; /* rounded */
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+}
+
+.dark-theme .toolbar-button {
+  color: #e5e7eb; /* text-gray-200 */
+}
+
+.dark-theme .toolbar-button:hover {
+  background-color: #374151; /* hover:bg-gray-700 */
+}
+
+.light-theme .toolbar-button {
+  color: #1f2937; /* text-gray-800 */
+}
+
+.light-theme .toolbar-button:hover {
+  background-color: #d1d5db; /* hover:bg-gray-300 */
+}
+
+/* Text area */
+.text-area {
+  width: 100%;
+  min-height: 200px; /* min-h-[200px] */
+  border-width: 1px; /* border */
+  border-radius: 0 0 0.5rem 0.5rem; /* rounded-b */
+  padding: 0.75rem; /* p-3 */
+}
+
+.text-area:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6; /* focus:ring-2 focus:ring-blue-500 */
+}
+
+.dark-theme .text-area {
+  background-color: #1f2937; /* bg-gray-800 */
+  color: #e5e7eb; /* text-gray-200 */
+  border-color: #374151; /* border-gray-700 */
+}
+
+.light-theme .text-area {
+  background-color: #ffffff; /* bg-white */
+  color: #1f2937; /* text-gray-800 */
+  border-color: #d1d5db; /* border-gray-300 */
+}
+
+/* Emoji picker */
+.emoji-picker {
+  border-width: 1px; /* border */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+  padding: 0.5rem; /* p-2 */
+  width: 224px; /* w-56 */
+  z-index: 50; /* z-50 */
+}
+
+.dark-theme .emoji-picker {
+  background-color: #1f2937; /* bg-gray-800 */
+  border-color: #374151; /* border-gray-700 */
+}
+
+.light-theme .emoji-picker {
+  background-color: #ffffff; /* bg-white */
+  border-color: #d1d5db; /* border-gray-300 */
+}
+
+.dark-theme .emoji-picker button {
+  color: #e5e7eb; /* text-gray-200 */
+  border-radius: 0.25rem; /* rounded */
+}
+
+.dark-theme .emoji-picker button:hover {
+  background-color: #374151; /* hover:bg-gray-700 */
+}
+
+.light-theme .emoji-picker button {
+  color: #1f2937; /* text-gray-800 */
+  border-radius: 0.25rem; /* rounded */
+}
+
+.light-theme .emoji-picker button:hover {
+  background-color: #e5e7eb; /* hover:bg-gray-200 */
+}
