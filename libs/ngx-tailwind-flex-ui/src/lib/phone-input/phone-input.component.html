@@ -1,0 +1,50 @@
+<div
+  [ngClass]="{
+    'flex items-center space-x-2': displayStyle === 'inline',
+    'flex flex-col space-y-2': displayStyle === 'stacked'
+  }"
+>
+  <!-- Country Dropdown or Fixed Prefix -->
+  <ng-container *ngIf="!disableDropdown; else fixedCountry">
+    <select
+      [(ngModel)]="country"
+      (change)="onCountryChange($event)"
+      (keyup)="onCountryChange($event)"
+      tabindex="0"
+      class="border rounded p-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option *ngFor="let c of countries" [value]="c.code">
+        {{ showCountryFlag ? '' : c.name }} ({{ c.dialCode }})
+      </option>
+    </select>
+  </ng-container>
+
+  <ng-template #fixedCountry>
+    <span class="flex items-center p-2 bg-gray-100 border rounded">
+      <ng-container *ngIf="showCountryFlag">
+        <img
+          [src]="'https://flagcdn.com/16x12/' + (country | lowercase) + '.png'"
+          [alt]="country + ' flag'"
+          class="mr-1"
+        />
+      </ng-container>
+      <ng-container *ngIf="showCountryCode">
+        {{ selectedCountryCode }}
+      </ng-container>
+    </span>
+  </ng-template>
+
+  <!-- Phone Input -->
+  <input
+    type="tel"
+    [(ngModel)]="phoneNumber"
+    (input)="formatPhoneNumber()"
+    (blur)="markAsTouched()"
+    (keyup)="formatPhoneNumber()"
+    placeholder="Enter phone number"
+    tabindex="0"
+    class="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+    [class.border-red-500]="!isValid"
+  />
+</div>
+<p *ngIf="!isValid" class="text-red-500 text-sm mt-1">Invalid phone number</p>
