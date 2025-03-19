@@ -1,0 +1,6 @@
+<div
+  class="skeleton-loader transition-all hover:shadow-lg"
+  [ngClass]="[validatedTypeClass, validatedAnimationClass, validatedColor]"
+  [style.width]="type === 'circle' ? size : width"
+  [style.height]="type === 'circle' ? size : type === 'text' ? '16px' : height"
+></div>
