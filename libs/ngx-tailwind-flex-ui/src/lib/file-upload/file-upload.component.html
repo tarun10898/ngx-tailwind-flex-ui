@@ -1,0 +1,36 @@
+<div
+  class="border-2 border-dashed rounded-lg p-6 text-center transition-all"
+  [ngClass]="{
+    'border-blue-500 bg-blue-50': isDragging,
+    'border-gray-300 bg-white': !isDragging
+  }"
+  (dragover)="onDragOver($event)"
+  git
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  <p class="text-gray-600">Drag and drop files here or</p>
+  <label class="cursor-pointer text-blue-600 hover:underline">
+    Browse
+    <input
+      type="file"
+      class="hidden"
+      (change)="onFileSelect($event)"
+      multiple
+    />
+  </label>
+</div>
+
+<ul *ngIf="selectedFiles.length > 0" class="mt-4">
+  <li *ngFor="let file of selectedFiles" class="text-gray-700 text-sm">
+    {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+  </li>
+</ul>
+
+<button
+  *ngIf="selectedFiles.length > 0"
+  class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+  (click)="uploadFiles()"
+>
+  Upload
+</button>
