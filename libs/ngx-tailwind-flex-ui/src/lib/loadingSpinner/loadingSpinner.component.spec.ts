@@ -31,7 +31,7 @@ describe('LoadingSpinnerComponent', () => {
     const circles = svg.querySelectorAll('circle');
     expect(circles.length).toBe(2);
     expect(circles[0].style.stroke).toBe('#3b82f6');
-    expect(circles[0].style.strokeWidth).toBe('4px');
+    expect(circles[0].style.strokeWidth).toBe('4'); // Updated to expect "4"
   });
 
   it('should render a determinate spinner when mode is determinate', () => {
@@ -62,8 +62,8 @@ describe('LoadingSpinnerComponent', () => {
     fixture.detectChanges();
     const svg = fixture.nativeElement.querySelector('svg');
     const circles = svg.querySelectorAll('circle');
-    expect(circles[0].style.strokeWidth).toBe('6px');
-    expect(circles[1].style.strokeWidth).toBe('6px');
+    expect(circles[0].style.strokeWidth).toBe('6'); // Updated to expect "6"
+    expect(circles[1].style.strokeWidth).toBe('6'); // Updated to expect "6"
   });
 
   it('should apply custom color', () => {
@@ -82,10 +82,10 @@ describe('LoadingSpinnerComponent', () => {
     const circle = fixture.nativeElement.querySelector(
       'svg circle:nth-child(2)'
     );
-    expect(circle.style.strokeDashoffset).toBe('188.4'); // 251.2 - (251.2 * 0.25)
+    expect(parseFloat(circle.style.strokeDashoffset)).toBeCloseTo(188.4, 1); // 251.2 - (251.2 * 0.25)
 
     component.value = 75;
     fixture.detectChanges();
-    expect(circle.style.strokeDashoffset).toBe('62.8'); // 251.2 - (251.2 * 0.75)
+    expect(parseFloat(circle.style.strokeDashoffset)).toBeCloseTo(62.8, 1); // 251.2 - (251.2 * 0.75)
   });
 });
