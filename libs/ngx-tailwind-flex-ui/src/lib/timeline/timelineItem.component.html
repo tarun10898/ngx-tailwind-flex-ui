@@ -1,0 +1,56 @@
+<div
+  class="relative flex group"
+  [ngClass]="{
+    'flex-col items-start': orientation === 'vertical',
+    'flex-row items-center': orientation === 'horizontal'
+  }"
+  role="listitem"
+>
+  <!-- Marker -->
+  <div
+    class="flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+    [ngClass]="{
+      'w-10 h-10': orientation === 'vertical',
+      'w-10 h-10': orientation === 'horizontal',
+      'bg-green-500': status === 'completed',
+      'bg-gray-400': status === 'pending',
+      'bg-red-500': status === 'error',
+      'rounded-full': true
+    }"
+  >
+    <span
+      class="text-white text-lg"
+      [ngClass]="{
+        'material-icons': icon !== 'circle',
+        'w-5 h-5 rounded-full bg-current': icon === 'circle'
+      }"
+      >{{ icon !== 'circle' ? icon : '' }}</span
+    >
+  </div>
+
+  <!-- Connector Line -->
+  <div
+    class="absolute bg-gray-300 transition-all duration-300 group-hover:bg-gray-400"
+    [ngClass]="{
+      'w-0.5 left-5 top-10 h-[calc(100%-2.5rem)]': orientation === 'vertical',
+      'h-0.5 top-5 left-10 w-[calc(100%-2.5rem)]': orientation === 'horizontal',
+      'last:hidden': true
+    }"
+  ></div>
+
+  <!-- Label and Timestamp -->
+  <div
+    class="ml-4 transition-all duration-300"
+    [ngClass]="{
+      'mt-1': orientation === 'vertical',
+      'flex-1': orientation === 'horizontal'
+    }"
+  >
+    <div class="text-lg font-semibold text-gray-800 group-hover:text-gray-900">
+      {{ label }}
+    </div>
+    <div class="text-sm text-gray-600 group-hover:text-gray-700">
+      {{ timestamp }}
+    </div>
+  </div>
+</div>
