@@ -1,9 +1,17 @@
 import { Meta, StoryObj } from '@storybook/angular';
 import { AlertComponent } from './alert.component';
+import { applicationConfig } from '@storybook/angular';
+import { importProvidersFrom } from '@angular/core'; // Import importProvidersFrom
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const meta: Meta<AlertComponent> = {
   title: 'Components/Alert',
   component: AlertComponent,
+  decorators: [
+    applicationConfig({
+      providers: [importProvidersFrom(BrowserAnimationsModule)], // Use importProvidersFrom
+    }),
+  ],
   argTypes: {
     message: { control: 'text' },
     type: {
@@ -22,6 +30,24 @@ const meta: Meta<AlertComponent> = {
         'bottom-left',
         'bottom-center',
         'bottom-right',
+      ],
+    },
+    icon: {
+      control: 'select',
+      options: [
+        '',
+        'pizza',
+        'mood',
+        'star',
+        'favorite',
+        'thumb_up',
+        'lightbulb',
+        'coffee',
+        'cloud',
+        'music_note',
+        'pets',
+        'rocket',
+        'beach_access',
       ],
     },
   },
@@ -67,5 +93,16 @@ export const SuccessWithAction: Story = {
     action: 'Undo',
     duration: 3000,
     position: 'bottom-center',
+  },
+};
+
+export const WarningWithCustomIcon: Story = {
+  args: {
+    message: 'Custom icon alert',
+    type: 'warning',
+    icon: 'star',
+    dismissible: true,
+    duration: 5000,
+    position: 'top-center',
   },
 };
