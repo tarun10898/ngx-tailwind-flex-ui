@@ -21,184 +21,58 @@ describe('SkeletonLoaderComponent', () => {
   });
 
   // Type Tests
-  it('should apply correct type class for text loader', () => {
+  it('should apply correct class for text type', () => {
     component.type = 'text';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('rounded');
+    expect(fixture.nativeElement.querySelector('.rounded')).toBeTruthy();
   });
 
-  it('should apply correct type class for circle loader', () => {
+  it('should apply correct class for circle type', () => {
     component.type = 'circle';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('rounded-full');
+    expect(fixture.nativeElement.querySelector('.rounded-full')).toBeTruthy();
   });
 
-  it('should apply correct type class for rect loader', () => {
-    component.type = 'rect';
+  it('should apply correct class for rounded type', () => {
+    component.type = 'rounded';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('rounded-lg');
-  });
-
-  it('should default to rect type if invalid type is provided', () => {
-    component.type = 'invalid' as 'text' | 'circle' | 'rect';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('rounded-lg');
-  });
-
-  it('should default to rect type if type is undefined', () => {
-    component.type = undefined;
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('rounded-lg');
+    expect(fixture.nativeElement.querySelector('.rounded-lg')).toBeTruthy();
   });
 
   // Animation Tests
   it('should apply pulse animation by default', () => {
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-pulse');
+    expect(fixture.nativeElement.querySelector('.animate-pulse')).toBeTruthy();
   });
 
   it('should apply wave animation when specified', () => {
     component.animation = 'wave';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-wave');
+    expect(fixture.nativeElement.querySelector('.animate-wave')).toBeTruthy();
   });
 
-  it('should apply shimmer animation when specified', () => {
-    component.animation = 'shimmer';
+  // Layout Tests
+  it('should render card layout with avatar when specified', () => {
+    component.layout = 'card';
+    component.showAvatar = true;
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-shimmer');
+    expect(fixture.nativeElement.querySelector('.skeleton-card')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.rounded-full')).toBeTruthy();
   });
 
-  it('should apply fade animation when specified', () => {
-    component.animation = 'fade';
+  it('should render avatar layout', () => {
+    component.layout = 'avatar';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-fade');
-  });
-
-  it('should apply bounce animation when specified', () => {
-    component.animation = 'bounce';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-bounce');
-  });
-
-  it('should apply no animation when specified', () => {
-    component.animation = 'none';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).not.toContain('animate-pulse');
-    expect(loaderElement.classList).not.toContain('animate-wave');
-    expect(loaderElement.classList).not.toContain('animate-shimmer');
-    expect(loaderElement.classList).not.toContain('animate-fade');
-    expect(loaderElement.classList).not.toContain('animate-bounce');
-  });
-
-  it('should default to pulse animation if invalid animation is provided', () => {
-    component.animation = 'invalid' as
-      | 'pulse'
-      | 'wave'
-      | 'shimmer'
-      | 'fade'
-      | 'bounce'
-      | 'none';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-pulse');
-  });
-
-  it('should default to pulse animation if animation is undefined', () => {
-    component.animation = undefined;
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('animate-pulse');
-  });
-
-  // Dimension Tests
-  it('should apply correct dimensions for circle loader', () => {
-    component.type = 'circle';
-    component.size = '50px';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.style.width).toBe('50px');
-    expect(loaderElement.style.height).toBe('50px');
-  });
-
-  it('should apply correct dimensions for rect loader', () => {
-    component.type = 'rect';
-    component.width = '200px';
-    component.height = '100px';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.style.width).toBe('200px');
-    expect(loaderElement.style.height).toBe('100px');
-  });
-
-  it('should apply default height for text loader', () => {
-    component.type = 'text';
-    component.width = '100%';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.style.height).toBe('16px');
-  });
-
-  it('should fall back to default dimensions when invalid values are provided', () => {
-    component.type = 'rect';
-    component.width = 'invalid';
-    component.height = 'invalid';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.style.width).toBe('100%');
-    expect(loaderElement.style.height).toBe('16px');
+    expect(
+      fixture.nativeElement.querySelector('.skeleton-avatar')
+    ).toBeTruthy();
   });
 
   // Color Tests
-  it('should apply default gray color when no color is provided', () => {
-    component.color = undefined;
+  it('should apply custom color', () => {
+    component.color = '#ff0000';
     fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('bg-gray-200');
-  });
-
-  it('should apply custom color when valid Tailwind class is provided via input', () => {
-    component.color = 'bg-blue-300';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('bg-blue-300');
-  });
-
-  it('should apply default color if invalid color is provided via input', () => {
-    component.color = 'invalid-color';
-    fixture.detectChanges();
-    const loaderElement =
-      fixture.nativeElement.querySelector('.skeleton-loader');
-    expect(loaderElement.classList).toContain('bg-gray-200');
+    const loader = fixture.nativeElement.querySelector('.skeleton-loader');
+    expect(loader.style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 });

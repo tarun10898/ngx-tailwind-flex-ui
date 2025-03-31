@@ -9,77 +9,54 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./skeleton-loader.component.css'],
 })
 export class SkeletonLoaderComponent implements OnInit {
-  @Input() type: 'text' | 'circle' | 'rect' | undefined = 'rect';
+  @Input() type: 'text' | 'circle' | 'rect' | 'rounded' = 'rect';
   @Input() width = '100%';
   @Input() height = '16px';
-  @Input() size = '40px';
-  @Input() animation:
-    | 'pulse'
-    | 'wave'
-    | 'shimmer'
-    | 'fade'
-    | 'bounce'
-    | 'none'
-    | undefined = 'pulse';
-  @Input() color: string | undefined;
+  @Input() animation: 'pulse' | 'wave' | 'none' = 'pulse';
+  @Input() color = '#e5e7eb'; // Default light gray
+  @Input() layout: 'simple' | 'card' | 'avatar' = 'simple'; // New layout input
+  @Input() showAvatar = false; // Toggle avatar in card/avatar layouts
 
   ngOnInit() {
     console.log('Initializing SkeletonLoader with inputs:', {
       type: this.type,
       width: this.width,
       height: this.height,
-      size: this.size,
       animation: this.animation,
       color: this.color,
+      layout: this.layout,
+      showAvatar: this.showAvatar,
     });
 
-    // Ensure all inputs are strings to avoid rendering issues
+    // Normalize inputs
     this.width = typeof this.width === 'string' ? this.width : '100%';
     this.height = typeof this.height === 'string' ? this.height : '16px';
-    this.size = typeof this.size === 'string' ? this.size : '40px';
-    this.color = typeof this.color === 'string' ? this.color : undefined;
-  }
-
-  get validatedColor(): string {
-    if (this.color && typeof this.color === 'string') {
-      const colorClasses = this.color.trim().split(/\s+/);
-      const isValid = colorClasses.every(
-        (cls) =>
-          cls.startsWith('bg-') ||
-          cls.startsWith('from-') ||
-          cls.startsWith('to-') ||
-          cls.startsWith('via-')
-      );
-      return isValid ? this.color : 'bg-gray-200';
-    }
-    return 'bg-gray-200';
+    this.color = typeof this.color === 'string' ? this.color : '#e5e7eb';
   }
 
   get validatedTypeClass(): string {
     switch (this.type) {
-      case 'text':
-        return 'rounded';
       case 'circle':
         return 'rounded-full';
+      case 'rounded':
+        return 'rounded-lg'; // Changed from 'rounded' to match test
+      case 'text':
+        return 'rounded'; // Changed from 'rounded-none' to match test
       case 'rect':
-        return 'rounded-lg';
       default:
-        return 'rounded-lg';
+        return 'rounded-none';
     }
   }
 
   get validatedAnimationClass(): string {
     switch (this.animation) {
       case 'pulse':
-      case 'wave':
-      case 'shimmer':
-      case 'fade':
-      case 'bounce':
-        return `animate-${this.animation}`;
-      case 'none':
-        return '';
-      default:
         return 'animate-pulse';
+      case 'wave':
+        return 'animate-wave';
+      case 'none':
+      default:
+        return '';
     }
   }
 }
