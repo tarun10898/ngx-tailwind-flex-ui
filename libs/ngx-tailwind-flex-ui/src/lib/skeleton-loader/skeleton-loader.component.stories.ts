@@ -1,29 +1,19 @@
-import { Meta, StoryObj, applicationConfig } from '@storybook/angular';
+import { Meta, StoryObj, ArgTypes } from '@storybook/angular';
 import { SkeletonLoaderComponent } from './skeleton-loader.component';
-import { importProvidersFrom } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
-const meta: Meta<SkeletonLoaderComponent> = {
+const meta: Meta<SkeletonLoaderComponent> & {
+  argTypes: Partial<ArgTypes<SkeletonLoaderComponent>>;
+} = {
   title: 'Components/SkeletonLoader',
   component: SkeletonLoaderComponent,
-  decorators: [
-    applicationConfig({
-      providers: [importProvidersFrom(CommonModule)],
-    }),
-  ],
   argTypes: {
-    type: { control: 'select', options: ['text', 'circle', 'rect'] },
-    animation: {
-      control: 'select',
-      options: ['pulse', 'wave', 'shimmer', 'fade', 'bounce', 'none'],
-    },
-    color: {
-      control: 'select',
-      options: ['bg-gray-200', 'bg-blue-300', 'bg-green-500', 'bg-red-500'],
-    },
+    type: { control: 'select', options: ['text', 'circle', 'rect', 'rounded'] },
+    animation: { control: 'select', options: ['pulse', 'wave', 'none'] },
+    color: { control: 'color' },
     width: { control: 'text' },
     height: { control: 'text' },
-    size: { control: 'text' },
+    layout: { control: 'select', options: ['simple', 'card', 'avatar'] },
+    showAvatar: { control: 'boolean' },
   },
 };
 
@@ -31,41 +21,156 @@ export default meta;
 
 type Story = StoryObj<SkeletonLoaderComponent>;
 
+// Existing Stories
 export const Default: Story = {
   args: {
     type: 'rect',
     width: '100%',
-    height: '10px',
+    height: '100px',
     animation: 'pulse',
-    color: 'bg-blue-300',
+    color: '#e5e7eb',
+    layout: 'simple',
   },
-  render: (args) => ({
-    props: args,
-    template: `<lib-skeleton-loader
-      [type]="type"
-      [width]="width"
-      [height]="height"
-      [size]="size"
-      [animation]="animation"
-      [color]="color"
-    ></lib-skeleton-loader>`,
-  }),
 };
 
 export const Circle: Story = {
   args: {
     type: 'circle',
-    size: '40px',
+    width: '40px',
+    height: '40px',
     animation: 'wave',
-    color: 'bg-green-500',
+    color: '#b0b0b0',
+    layout: 'simple',
+  },
+};
+
+export const Card: Story = {
+  args: {
+    layout: 'card',
+    width: '300px',
+    height: '140px',
+    color: '#d3d3d3',
+    showAvatar: true,
+    animation: 'pulse',
+  },
+};
+
+export const Avatar: Story = {
+  args: {
+    layout: 'avatar',
+    width: '200px',
+    height: '16px',
+    color: '#a9a9a9',
+    animation: 'pulse',
+  },
+};
+
+// New Stories
+export const TextLine: Story = {
+  name: 'Text Line (Single Line Placeholder)',
+  args: {
+    type: 'text',
+    width: '80%',
+    height: '16px',
+    animation: 'pulse',
+    color: '#cccccc',
+    layout: 'simple',
+  },
+};
+
+export const ListItem: Story = {
+  name: 'List Item (Avatar + Multi-line Text)',
+  args: {
+    layout: 'avatar',
+    width: '300px',
+    height: '16px',
+    color: '#bbbbbb',
+    animation: 'wave',
   },
   render: (args) => ({
     props: args,
-    template: `<lib-skeleton-loader
-      [type]="type"
-      [size]="size"
-      [animation]="animation"
-      [color]="color"
-    ></lib-skeleton-loader>`,
+    template: `
+      <div style="padding: 16px;">
+        <lib-skeleton-loader
+          [layout]="layout"
+          [width]="width"
+          [height]="height"
+          [color]="color"
+          [animation]="animation"
+        ></lib-skeleton-loader>
+        <lib-skeleton-loader
+          type="text"
+          width="60%"
+          height="12px"
+          [animation]="animation"
+          [color]="color"
+          layout="simple"
+          style="margin-top: 8px;"
+        ></lib-skeleton-loader>
+      </div>
+    `,
+  }),
+};
+
+export const Banner: Story = {
+  name: 'Banner (Full-width Image Placeholder)',
+  args: {
+    type: 'rounded',
+    width: '100%',
+    height: '200px',
+    animation: 'wave',
+    color: '#e0e0e0',
+    layout: 'simple',
+  },
+};
+
+export const ContentBlock: Story = {
+  name: 'Content Block (Text-heavy Layout)',
+  args: {
+    layout: 'simple',
+    color: '#d9d9d9',
+    animation: 'pulse',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <div style="padding: 16px; max-width: 600px;">
+        <lib-skeleton-loader
+          type="text"
+          width="40%"
+          height="24px"
+          [animation]="animation"
+          [color]="color"
+          [layout]="layout"
+        ></lib-skeleton-loader>
+        <lib-skeleton-loader
+          type="text"
+          width="100%"
+          height="16px"
+          [animation]="animation"
+          [color]="color"
+          [layout]="layout"
+          style="margin-top: 12px;"
+        ></lib-skeleton-loader>
+        <lib-skeleton-loader
+          type="text"
+          width="90%"
+          height="16px"
+          [animation]="animation"
+          [color]="color"
+          [layout]="layout"
+          style="margin-top: 8px;"
+        ></lib-skeleton-loader>
+        <lib-skeleton-loader
+          type="text"
+          width="70%"
+          height="16px"
+          [animation]="animation"
+          [color]="color"
+          [layout]="layout"
+          style="margin-top: 8px;"
+        ></lib-skeleton-loader>
+      </div>
+    `,
   }),
 };

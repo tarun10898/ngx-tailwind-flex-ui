@@ -3,7 +3,6 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  background-color: #e5e7eb; /* Fallback light gray background */
 }
 
 .skeleton-loader.rounded {
@@ -16,6 +15,10 @@
 
 .skeleton-loader.rounded-lg {
   border-radius: 16px;
+}
+
+.skeleton-loader.rounded-none {
+  border-radius: 0;
 }
 
 /* Pulse Animation */
@@ -34,39 +37,37 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(202, 92, 92, 0.6) 50%,
+    rgba(255, 255, 255, 0.3) 50%,
     transparent 100%
   );
   animation: wave 1.4s linear infinite;
-  filter: blur(2px);
 }
 
-/* Shimmer Animation with Glow */
-.skeleton-loader.animate-shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 120%;
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(51, 53, 223, 0.8) 50%,
-    transparent 100%
-  );
-  animation: shimmer 1.8s ease-in-out infinite;
-  box-shadow: 0 0 10px rgba(145, 77, 77, 0.5);
+/* Card Layout */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  max-width: 345px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Fade Animation */
-.skeleton-loader.animate-fade {
-  animation: fade 1.6s ease-in-out infinite;
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Bounce Animation */
-.skeleton-loader.animate-bounce {
-  animation: bounce 1.5s ease-in-out infinite;
+/* Avatar Layout */
+.skeleton-avatar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-content {
+  flex: 1;
 }
 
 /* Keyframes */
@@ -89,44 +90,12 @@
   }
 }
 
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%) skewX(-15deg);
-  }
-  100% {
-    transform: translateX(100%) skewX(-15deg);
-  }
-}
-
-@keyframes fade {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .skeleton-loader {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
-  .skeleton-loader.rounded {
-    border-radius: 6px;
-  }
-  .skeleton-loader.rounded-lg {
-    border-radius: 12px;
+  .skeleton-card {
+    padding: 12px;
   }
 }
