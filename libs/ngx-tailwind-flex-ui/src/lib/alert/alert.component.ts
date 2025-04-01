@@ -1,4 +1,3 @@
-// alert.component.ts
 import {
   Component,
   Input,
@@ -65,6 +64,8 @@ export class AlertComponent implements AfterViewInit, OnDestroy {
     | 'bottom-left'
     | 'bottom-center'
     | 'bottom-right' = 'top-right';
+  private _iconColor: string | null = null;
+  private _customClass: string | null = null;
 
   @Input() message = '';
   @Input()
@@ -75,6 +76,7 @@ export class AlertComponent implements AfterViewInit, OnDestroy {
       );
     }
     this._type = value;
+    this.cdr.markForCheck();
   }
   get type(): 'success' | 'error' | 'warning' | 'info' {
     return this._type;
@@ -108,6 +110,7 @@ export class AlertComponent implements AfterViewInit, OnDestroy {
       );
     }
     this._position = value;
+    this.cdr.markForCheck();
   }
   get position():
     | 'top-left'
@@ -120,8 +123,24 @@ export class AlertComponent implements AfterViewInit, OnDestroy {
   }
 
   @Input() icon: string | null = null;
-  @Input() iconColor: string | null = null;
-  @Input() customClass: string | null = null;
+  @Input()
+  set iconColor(value: string | null) {
+    this._iconColor = value;
+    this.cdr.detectChanges(); // Force change detection
+  }
+  get iconColor(): string | null {
+    return this._iconColor;
+  }
+
+  @Input()
+  set customClass(value: string | null) {
+    this._customClass = value;
+    this.cdr.detectChanges(); // Force change detection
+  }
+  get customClass(): string | null {
+    return this._customClass;
+  }
+
   @Input() animation: 'fade' | 'slide' = 'fade';
   @Input() actionTemplate: TemplateRef<unknown> | null = null;
   @Input() bypassDuplicateCheck = false;

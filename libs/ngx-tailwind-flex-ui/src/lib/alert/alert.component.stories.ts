@@ -3,23 +3,52 @@ import { AlertComponent } from './alert.component';
 import { applicationConfig } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-// Define a custom type for the Stacked Alerts story args
+// Define the interface for the StackedAlerts story with flat properties
 interface StackedAlertsArgs {
   firstMessage: string;
   firstType: 'success' | 'error' | 'warning' | 'info';
-  secondMessage: string;
-  secondType: 'success' | 'error' | 'warning' | 'info';
-  thirdMessage: string;
-  thirdType: 'success' | 'error' | 'warning' | 'info';
-  position:
+  firstAction: string | null;
+  firstDismissible: boolean;
+  firstIcon: string | null;
+  firstDuration: number;
+  firstAnimation: 'fade' | 'slide';
+  firstPosition:
     | 'top-left'
     | 'top-center'
     | 'top-right'
     | 'bottom-left'
     | 'bottom-center'
     | 'bottom-right';
-  duration: number;
-  animation: 'fade' | 'slide';
+
+  secondMessage: string;
+  secondType: 'success' | 'error' | 'warning' | 'info';
+  secondAction: string | null;
+  secondDismissible: boolean;
+  secondIcon: string | null;
+  secondDuration: number;
+  secondAnimation: 'fade' | 'slide';
+  secondPosition:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
+
+  thirdMessage: string;
+  thirdType: 'success' | 'error' | 'warning' | 'info';
+  thirdAction: string | null;
+  thirdDismissible: boolean;
+  thirdIcon: string | null;
+  thirdDuration: number;
+  thirdAnimation: 'fade' | 'slide';
+  thirdPosition:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
 }
 
 const meta: Meta<AlertComponent> = {
@@ -30,29 +59,16 @@ const meta: Meta<AlertComponent> = {
       providers: [provideAnimations()],
     }),
   ],
+  args: {},
   argTypes: {
-    message: {
-      control: 'text',
-      description: 'The message to display in the alert',
-    },
+    message: { control: 'text' },
     type: {
       control: 'select',
       options: ['success', 'warning', 'error', 'info'],
-      description: "The type of alert ('success', 'error', 'warning', 'info')",
     },
-    duration: {
-      control: 'number',
-      description:
-        'Duration in milliseconds before the alert auto-closes (0 to disable)',
-    },
-    action: {
-      control: 'text',
-      description: 'Text for the action button (optional)',
-    },
-    dismissible: {
-      control: 'boolean',
-      description: 'Whether the alert can be dismissed with a close button',
-    },
+    duration: { control: 'number' },
+    action: { control: 'text' },
+    dismissible: { control: 'boolean' },
     position: {
       control: 'select',
       options: [
@@ -63,7 +79,6 @@ const meta: Meta<AlertComponent> = {
         'bottom-center',
         'bottom-right',
       ],
-      description: 'Position of the alert on the screen',
     },
     icon: {
       control: 'select',
@@ -82,38 +97,8 @@ const meta: Meta<AlertComponent> = {
         'rocket',
         'beach_access',
       ],
-      description: 'Custom icon name (e.g., "star")',
     },
-    iconColor: {
-      control: 'select',
-      options: [
-        'text-red-500',
-        'text-green-500',
-        'text-blue-500',
-        'text-yellow-500',
-        'text-purple-500',
-        'text-gray-500',
-      ],
-      description:
-        'Custom Tailwind CSS color class for the icon (e.g., text-purple-500)',
-    },
-    customClass: {
-      control: 'select',
-      options: [
-        '',
-        'bg-purple-200 border-purple-500 text-purple-800',
-        'bg-blue-200 border-blue-500 text-blue-800',
-        'bg-red-200 border-red-500 text-red-800',
-        'bg-green-200 border-green-500 text-green-800',
-      ],
-      description:
-        'Custom Tailwind CSS classes to apply to the alert container',
-    },
-    animation: {
-      control: 'select',
-      options: ['fade', 'slide'],
-      description: 'Animation type for the alert (fade or slide)',
-    },
+    animation: { control: 'select', options: ['fade', 'slide'] },
   },
 };
 
@@ -121,7 +106,6 @@ export default meta;
 
 type Story = StoryObj<AlertComponent>;
 
-// Stories that directly use AlertComponent inputs
 export const BasicSnackBar: Story = {
   args: {
     message: 'Disco party!',
@@ -166,51 +150,12 @@ export const WarningWithCustomIcon: Story = {
     message: 'Custom icon alert',
     type: 'warning',
     icon: 'star',
-    iconColor: 'text-purple-500',
     dismissible: true,
     duration: 5000,
     position: 'top-center',
   },
 };
 
-export const CustomActionTemplate: Story = {
-  render: (args) => ({
-    props: args,
-    template: `
-      <lib-alert
-        [message]="message"
-        [type]="type"
-        [action]="action"
-        [duration]="duration"
-        [position]="position"
-        [animation]="animation"
-      >
-        <ng-template #actionTemplate>
-          <button
-            class="bg-blue-500 text-white px-2 Ascendingly
-            (click)="onAction()"
-            (keydown.enter)="onAction()"
-            (keydown.space)="onAction()"
-            [attr.aria-label]="action + ' action'"
-            tabindex="0"
-          >
-            {{ action }}
-          </button>
-        </ng-template>
-      </lib-alert>
-    `,
-  }),
-  args: {
-    message: 'Custom action template',
-    type: 'info',
-    action: 'Confirm',
-    duration: 5000,
-    position: 'top-right',
-    animation: 'slide',
-  },
-};
-
-// Stacked Alerts story with custom args type
 export const StackedAlerts: StoryObj<AlertComponent & StackedAlertsArgs> = {
   render: (args: StackedAlertsArgs) => ({
     props: args,
@@ -218,25 +163,34 @@ export const StackedAlerts: StoryObj<AlertComponent & StackedAlertsArgs> = {
       <lib-alert
         [message]="firstMessage"
         [type]="firstType"
-        [position]="position"
-        [duration]="duration"
-        [animation]="animation"
+        [action]="firstAction"
+        [dismissible]="firstDismissible"
+        [icon]="firstIcon"
+        [duration]="firstDuration"
+        [animation]="firstAnimation"
+        [position]="firstPosition"
         [bypassDuplicateCheck]="true"
       ></lib-alert>
       <lib-alert
         [message]="secondMessage"
         [type]="secondType"
-        [position]="position"
-        [duration]="duration"
-        [animation]="animation"
+        [action]="secondAction"
+        [dismissible]="secondDismissible"
+        [icon]="secondIcon"
+        [duration]="secondDuration"
+        [animation]="secondAnimation"
+        [position]="secondPosition"
         [bypassDuplicateCheck]="true"
       ></lib-alert>
       <lib-alert
         [message]="thirdMessage"
         [type]="thirdType"
-        [position]="position"
-        [duration]="duration"
-        [animation]="animation"
+        [action]="thirdAction"
+        [dismissible]="thirdDismissible"
+        [icon]="thirdIcon"
+        [duration]="thirdDuration"
+        [animation]="thirdAnimation"
+        [position]="thirdPosition"
         [bypassDuplicateCheck]="true"
       ></lib-alert>
     `,
@@ -244,31 +198,73 @@ export const StackedAlerts: StoryObj<AlertComponent & StackedAlertsArgs> = {
   args: {
     firstMessage: 'First alert',
     firstType: 'success',
+    firstAction: null,
+    firstDismissible: true,
+    firstIcon: 'star',
+    firstDuration: 50000,
+    firstAnimation: 'slide',
+    firstPosition: 'top-right',
+
     secondMessage: 'Second alert',
     secondType: 'warning',
+    secondAction: null,
+    secondDismissible: true,
+    secondIcon: null,
+    secondDuration: 50000,
+    secondAnimation: 'slide',
+    secondPosition: 'top-right',
+
     thirdMessage: 'Third alert',
     thirdType: 'error',
-    position: 'top-right',
-    duration: 50000,
-    animation: 'slide',
+    thirdAction: null,
+    thirdDismissible: true,
+    thirdIcon: null,
+    thirdDuration: 50000,
+    thirdAnimation: 'slide',
+    thirdPosition: 'top-right',
   } as StackedAlertsArgs,
   argTypes: {
-    firstMessage: { control: 'text' },
+    // First Alert Controls
+    firstMessage: {
+      control: { type: 'text', disable: false },
+      name: 'First Alert Message',
+    },
     firstType: {
       control: 'select',
       options: ['success', 'error', 'warning', 'info'],
+      name: 'First Alert Type',
     },
-    secondMessage: { control: 'text' },
-    secondType: {
+    firstAction: {
+      control: { type: 'text', disable: false },
+      name: 'First Alert Action',
+    },
+    firstDismissible: { control: 'boolean', name: 'First Alert Dismissible' },
+    firstIcon: {
       control: 'select',
-      options: ['success', 'error', 'warning', 'info'],
+      options: [
+        '',
+        'pizza',
+        'mood',
+        'star',
+        'favorite',
+        'thumb_up',
+        'lightbulb',
+        'coffee',
+        'cloud',
+        'music_note',
+        'pets',
+        'rocket',
+        'beach_access',
+      ],
+      name: 'First Alert Icon',
     },
-    thirdMessage: { control: 'text' },
-    thirdType: {
+    firstDuration: { control: 'number', name: 'First Alert Duration' },
+    firstAnimation: {
       control: 'select',
-      options: ['success', 'error', 'warning', 'info'],
+      options: ['fade', 'slide'],
+      name: 'First Alert Animation',
     },
-    position: {
+    firstPosition: {
       control: 'select',
       options: [
         'top-left',
@@ -278,11 +274,123 @@ export const StackedAlerts: StoryObj<AlertComponent & StackedAlertsArgs> = {
         'bottom-center',
         'bottom-right',
       ],
+      name: 'First Alert Position',
     },
-    duration: { control: 'number' },
-    animation: {
+
+    // Second Alert Controls
+    secondMessage: {
+      control: { type: 'text', disable: false },
+      name: 'Second Alert Message',
+    },
+    secondType: {
+      control: 'select',
+      options: ['success', 'error', 'warning', 'info'],
+      name: 'Second Alert Type',
+    },
+    secondAction: {
+      control: { type: 'text', disable: false },
+      name: 'Second Alert Action',
+    },
+    secondDismissible: { control: 'boolean', name: 'Second Alert Dismissible' },
+    secondIcon: {
+      control: 'select',
+      options: [
+        '',
+        'pizza',
+        'mood',
+        'star',
+        'favorite',
+        'thumb_up',
+        'lightbulb',
+        'coffee',
+        'cloud',
+        'music_note',
+        'pets',
+        'rocket',
+        'beach_access',
+      ],
+      name: 'Second Alert Icon',
+    },
+    secondDuration: { control: 'number', name: 'Second Alert Duration' },
+    secondAnimation: {
       control: 'select',
       options: ['fade', 'slide'],
+      name: 'Second Alert Animation',
     },
+    secondPosition: {
+      control: 'select',
+      options: [
+        'top-left',
+        'top-center',
+        'top-right',
+        'bottom-left',
+        'bottom-center',
+        'bottom-right',
+      ],
+      name: 'Second Alert Position',
+    },
+
+    // Third Alert Controls
+    thirdMessage: {
+      control: { type: 'text', disable: false },
+      name: 'Third Alert Message',
+    },
+    thirdType: {
+      control: 'select',
+      options: ['success', 'error', 'warning', 'info'],
+      name: 'Third Alert Type',
+    },
+    thirdAction: {
+      control: { type: 'text', disable: false },
+      name: 'Third Alert Action',
+    },
+    thirdDismissible: { control: 'boolean', name: 'Third Alert Dismissible' },
+    thirdIcon: {
+      control: 'select',
+      options: [
+        '',
+        'pizza',
+        'mood',
+        'star',
+        'favorite',
+        'thumb_up',
+        'lightbulb',
+        'coffee',
+        'cloud',
+        'music_note',
+        'pets',
+        'rocket',
+        'beach_access',
+      ],
+      name: 'Third Alert Icon',
+    },
+    thirdDuration: { control: 'number', name: 'Third Alert Duration' },
+    thirdAnimation: {
+      control: 'select',
+      options: ['fade', 'slide'],
+      name: 'Third Alert Animation',
+    },
+    thirdPosition: {
+      control: 'select',
+      options: [
+        'top-left',
+        'top-center',
+        'top-right',
+        'bottom-left',
+        'bottom-center',
+        'bottom-right',
+      ],
+      name: 'Third Alert Position',
+    },
+
+    // Remove inherited fields that are not used in this story
+    message: { table: { disable: true } },
+    type: { table: { disable: true } },
+    duration: { table: { disable: true } },
+    action: { table: { disable: true } },
+    dismissible: { table: { disable: true } },
+    position: { table: { disable: true } },
+    icon: { table: { disable: true } },
+    animation: { table: { disable: true } },
   },
 };

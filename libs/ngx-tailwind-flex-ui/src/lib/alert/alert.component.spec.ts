@@ -1,4 +1,3 @@
-// alert.component.spec.ts
 import {
   ComponentFixture,
   TestBed,
@@ -32,7 +31,7 @@ import '@testing-library/jest-dom';
 class TestHostComponent {
   message = 'Test alert';
   action = 'Action';
-  actionTemplate!: TemplateRef<unknown>; // Added ! to assert it will be assigned
+  actionTemplate!: TemplateRef<unknown>;
 
   onAction() {
     console.log('Action clicked');
@@ -136,8 +135,6 @@ describe('AlertComponent', () => {
     expect(alertElement.classList).toContain('text-purple-800');
   });
 
-  // In alert.component.spec.ts, replace the failing tests with these:
-
   it('should stack multiple alerts vertically', fakeAsync(() => {
     const fixture1 = TestBed.createComponent(AlertComponent);
     const component1 = fixture1.componentInstance;
@@ -161,9 +158,9 @@ describe('AlertComponent', () => {
     expect(component2.offset).toBe(60);
 
     component1.close();
-    tick(); // Allow time for close animation
-    fixture1.destroy(); // Explicitly destroy the first component
-    tick(); // Allow time for position update after destruction
+    tick();
+    fixture1.destroy();
+    tick();
     fixture2.detectChanges();
     expect(component2.offset).toBe(0);
   }));
@@ -229,7 +226,7 @@ describe('AlertComponent', () => {
 
     alertDebugElement.triggerEventHandler('mouseleave', null);
     fixture.detectChanges();
-    tick(100); // Increased to ensure timer completes
+    tick(100);
     expect(resumeSpy).toHaveBeenCalled();
     expect(component.isVisible).toBe(false);
   }));
@@ -302,15 +299,12 @@ describe('AlertComponent', () => {
     expect(emitSpy).toHaveBeenCalled();
   });
 
-  // Replace these two tests in your existing alert.component.spec.ts
-
   it('should throw error for invalid type', () => {
     fixture = TestBed.createComponent(AlertComponent);
     component = fixture.componentInstance;
     component.message = 'Test alert';
     component.position = 'top-right';
     expect(() => {
-      // Instead of 'invalid' as any, use a string literal that isn't in the allowed types
       component.type = 'invalid-type' as
         | 'success'
         | 'error'
@@ -327,7 +321,6 @@ describe('AlertComponent', () => {
     component.message = 'Test alert';
     component.type = 'info';
     expect(() => {
-      // Instead of 'invalid' as any, use a string literal that isn't in the allowed positions
       component.position = 'invalid-position' as
         | 'top-left'
         | 'top-center'
@@ -382,7 +375,7 @@ describe('AlertComponent with Custom Action Template', () => {
     testHost.message = 'Test alert';
     testHost.action = 'Action';
     fixture.detectChanges();
-    tick(); // Wait for async operations
+    tick();
 
     const customAction = fixture.nativeElement.querySelector('.custom-action');
     expect(customAction).toBeTruthy();
