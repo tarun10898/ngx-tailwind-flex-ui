@@ -10,7 +10,9 @@
   },
   "private": false,
   "dependencies": {
+    "@angular-devkit/build-angular": "^19.2.2",
     "@angular/animations": "~19.1.0",
+    "@angular/build": "^19.2.2",
     "@angular/common": "~19.1.0",
     "@angular/compiler": "~19.1.0",
     "@angular/core": "~19.1.0",
@@ -20,6 +22,7 @@
     "@angular/router": "~19.1.0",
     "npm-force-resolutions": "^0.0.10",
     "rxjs": "~7.8.0",
+    "vite": "^6.2.4",
     "zone.js": "^0.15.0"
   },
   "devDependencies": {
