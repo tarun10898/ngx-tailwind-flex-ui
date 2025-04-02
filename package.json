@@ -22,11 +22,11 @@
     "@angular/router": "~19.1.0",
     "npm-force-resolutions": "^0.0.10",
     "rxjs": "~7.8.0",
-    "vite": "^6.2.4",
+    "vite": "^6.3.0",
     "zone.js": "^0.15.0"
   },
   "resolutions": {
-    "vite": "6.2.4"
+    "vite": "6.3.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.0",
