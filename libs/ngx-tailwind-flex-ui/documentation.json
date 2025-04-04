@@ -2,6 +2,43 @@
     "pipes": [],
     "interfaces": [
         {
+            "name": "SelectOption",
+            "id": "interface-SelectOption-6b6bbc027b3f42cb5701d6328cee782c5c057dfc2230275c66c9fae40db718e9f0b35f502da58a365c155e14e6b70b75f03d6593975bc6560243015aef1bd6b2",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import {\n  Component,\n  Input,\n  Output,\n  EventEmitter,\n  forwardRef,\n  ViewChild,\n  ElementRef,\n  OnInit,\n  HostListener,\n  ChangeDetectorRef,\n} from '@angular/core';\nimport { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\n\nexport interface SelectOption {\n  label: string;\n  value: string | number | boolean | null;\n}\n\n@Component({\n  selector: 'lib-select',\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  templateUrl: './select.component.html',\n  styleUrls: ['./select.component.css'],\n  providers: [\n    {\n      provide: NG_VALUE_ACCESSOR,\n      useExisting: forwardRef(() => SelectComponent),\n      multi: true,\n    },\n  ],\n})\nexport class SelectComponent implements ControlValueAccessor, OnInit {\n  @Input() options: SelectOption[] = [];\n  @Input() placeholder = 'Select an option';\n  @Input() disabled = false;\n  @Input() multiple = false;\n  @Input() required = false;\n\n  @Output() selectionChange = new EventEmitter<\n    string | number | boolean | null | (string | number | boolean | null)[]\n  >();\n  @Output() openedChange = new EventEmitter<boolean>();\n\n  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;\n  @ViewChild('dropdown') dropdown!: ElementRef;\n\n  isOpen = false;\n  searchText = '';\n  filteredOptions: SelectOption[] = [];\n  value:\n    | string\n    | number\n    | boolean\n    | null\n    | (string | number | boolean | null)[] = null;\n  touched = false;\n  focusedOptionIndex = -1;\n\n  constructor(private cdr: ChangeDetectorRef) {}\n\n  ngOnInit() {\n    this.filteredOptions = [...this.options];\n  }\n\n  get displayValue(): string {\n    if (this.value === null || this.value === undefined) {\n      return this.placeholder;\n    }\n\n    if (this.multiple) {\n      if (Array.isArray(this.value) && this.value !== null) {\n        const selectedLabels = this.options\n          .filter((opt) =>\n            (this.value as (string | number | boolean | null)[]).includes(\n              opt.value\n            )\n          )\n          .map((opt) => opt.label);\n        return selectedLabels.length > 0\n          ? selectedLabels.join(', ')\n          : this.placeholder;\n      }\n      return this.placeholder;\n    }\n\n    const selectedOption = this.options.find((opt) => opt.value === this.value);\n    return selectedOption ? selectedOption.label : this.placeholder;\n  }\n\n  // ControlValueAccessor methods\n  onChange: (\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ) => void = () => {\n    // This empty implementation will be replaced by registerOnChange\n    // We intentionally don't use the val parameter here\n  };\n\n  onTouched: () => void = () => {\n    // This empty implementation will be replaced by registerOnTouched\n  };\n\n  writeValue(\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ): void {\n    this.value = val;\n    this.onChange(this.value);\n    this.cdr.detectChanges();\n  }\n\n  registerOnChange(\n    fn: (\n      val:\n        | string\n        | number\n        | boolean\n        | null\n        | (string | number | boolean | null)[]\n    ) => void\n  ): void {\n    this.onChange = fn;\n  }\n\n  registerOnTouched(fn: () => void): void {\n    this.onTouched = fn;\n  }\n\n  setDisabledState(isDisabled: boolean): void {\n    this.disabled = isDisabled;\n  }\n\n  toggleDropdown(): void {\n    if (this.disabled) return;\n    this.isOpen = !this.isOpen;\n    this.openedChange.emit(this.isOpen);\n    if (this.isOpen) {\n      setTimeout(() => this.searchInput?.nativeElement.focus(), 0);\n      this.focusedOptionIndex = -1;\n    }\n  }\n\n  selectOption(option: SelectOption): void {\n    if (this.disabled) return;\n    if (this.multiple) {\n      const current = Array.isArray(this.value) ? this.value : [];\n      this.value = current.includes(option.value)\n        ? current.filter((v) => v !== option.value)\n        : [...current, option.value];\n    } else {\n      this.value = option.value;\n      this.isOpen = false;\n      this.openedChange.emit(false);\n    }\n    this.markTouched();\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n  }\n\n  isSelected(option: SelectOption): boolean {\n    if (this.multiple && Array.isArray(this.value)) {\n      return this.value.includes(option.value);\n    }\n    return this.value === option.value;\n  }\n\n  filterOptions(): void {\n    this.filteredOptions = this.options.filter((opt) =>\n      opt.label.toLowerCase().includes(this.searchText.toLowerCase())\n    );\n    this.focusedOptionIndex = -1;\n  }\n\n  clearSelection(event: Event): void {\n    event.stopPropagation();\n    this.value = this.multiple ? [] : null;\n    this.searchText = '';\n    this.filteredOptions = [...this.options];\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n    this.markTouched();\n  }\n\n  markTouched(): void {\n    this.touched = true;\n    this.onTouched();\n  }\n\n  isInvalid(): boolean {\n    return (\n      this.required &&\n      (this.value === null ||\n        (Array.isArray(this.value) && this.value.length === 0)) &&\n      this.touched\n    );\n  }\n\n  @HostListener('document:click', ['$event'])\n  handleClickOutside(event: MouseEvent): void {\n    const target = event.target as HTMLElement;\n    if (this.isOpen && !target.closest('lib-select')) {\n      this.isOpen = false;\n      this.openedChange.emit(this.isOpen);\n    }\n  }\n\n  private scrollToFocusedOption(): void {\n    if (this.focusedOptionIndex >= 0 && this.dropdown?.nativeElement) {\n      const options = this.dropdown.nativeElement.querySelectorAll('li');\n      if (options[this.focusedOptionIndex]) {\n        options[this.focusedOptionIndex].scrollIntoView({\n          behavior: 'smooth',\n          block: 'nearest',\n        });\n      }\n    }\n  }\n\n  @HostListener('keydown', ['$event'])\n  handleKeyboard(event: KeyboardEvent): void {\n    if (!this.isOpen) return;\n\n    switch (event.key) {\n      case 'ArrowDown':\n        event.preventDefault();\n        if (this.focusedOptionIndex < this.filteredOptions.length - 1) {\n          this.focusedOptionIndex++;\n        } else {\n          this.focusedOptionIndex = 0; // Wrap around to start\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'ArrowUp':\n        event.preventDefault();\n        if (this.focusedOptionIndex > 0) {\n          this.focusedOptionIndex--;\n        } else {\n          this.focusedOptionIndex = this.filteredOptions.length - 1; // Wrap around to end\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'Enter':\n        event.preventDefault();\n        if (\n          this.focusedOptionIndex >= 0 &&\n          this.focusedOptionIndex < this.filteredOptions.length\n        ) {\n          this.selectOption(this.filteredOptions[this.focusedOptionIndex]);\n        }\n        break;\n\n      case 'Escape':\n        event.preventDefault();\n        this.isOpen = false;\n        this.openedChange.emit(false);\n        break;\n\n      default:\n        break;\n    }\n  }\n}\n",
+            "properties": [
+                {
+                    "name": "label",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 18
+                },
+                {
+                    "name": "value",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string | number | boolean | null",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 19
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        }
+    ],
+    "interfaces": [
+        {
             "name": "StackedAlertsArgs",
             "id": "interface-StackedAlertsArgs-e4387f63dea172eb1a19f7906012e497d3884d459eab3517eb0429bbd3bb2e0a7bb7f32725bc43dde4de6e49a89bbe3cb3edc1a4c61c69f9e9ccd8b738b3969c",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
@@ -1498,6 +1535,683 @@
                 }
             },
             "templateData": "<div class=\"w-full bg-gray-200 rounded-full h-4 overflow-hidden relative\">\r\n\r\n  <!-- Determinate & Buffer Primary Progress -->\r\n  <div\r\n    *ngIf=\"variant === 'determinate' || variant === 'buffer'\"\r\n    class=\"h-full transition-all duration-300\"\r\n    [ngClass]=\"progressBarClass\"\r\n    [style.width.%]=\"progress\"\r\n    role=\"progressbar\"\r\n    [attr.aria-valuenow]=\"progress\"\r\n    aria-valuemin=\"0\"\r\n    aria-valuemax=\"100\"\r\n  ></div>\r\n\r\n  <!-- Indeterminate Animation -->\r\n  <div\r\n    *ngIf=\"variant === 'indeterminate'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-indeterminate\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Query Mode (Reversed Indeterminate) -->\r\n  <div\r\n    *ngIf=\"variant === 'query'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-query\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Buffer Secondary Progress -->\r\n  <!-- Buffer Secondary Progress Background -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full bg-gray-300 opacity-50\"\r\n[style.width.%]=\"bufferProgress\"\r\n></div>\r\n\r\n<!-- Buffer Animation Overlay -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n>\r\n<div class=\"buffer-wave\"></div>\r\n</div>\r\n\r\n\r\n</div>\r\n"
+            "templateData": "<div class=\"w-full bg-gray-200 rounded-full h-4 overflow-hidden relative\">\r\n\r\n  <!-- Determinate & Buffer Primary Progress -->\r\n  <div\r\n    *ngIf=\"variant === 'determinate' || variant === 'buffer'\"\r\n    class=\"h-full transition-all duration-300\"\r\n    [ngClass]=\"progressBarClass\"\r\n    [style.width.%]=\"progress\"\r\n    role=\"progressbar\"\r\n    [attr.aria-valuenow]=\"progress\"\r\n    aria-valuemin=\"0\"\r\n    aria-valuemax=\"100\"\r\n  ></div>\r\n\r\n  <!-- Indeterminate Animation -->\r\n  <div\r\n    *ngIf=\"variant === 'indeterminate'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-indeterminate\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Query Mode (Reversed Indeterminate) -->\r\n  <div\r\n    *ngIf=\"variant === 'query'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-query\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Buffer Secondary Progress -->\r\n  <!-- Buffer Secondary Progress Background -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full bg-gray-300 opacity-50\"\r\n[style.width.%]=\"bufferProgress\"\r\n></div>\r\n\r\n<!-- Buffer Animation Overlay -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n>\r\n<div class=\"buffer-wave\"></div>\r\n</div>\r\n\r\n\r\n</div>\r\n"
+        },
+        {
+            "name": "SelectComponent",
+            "id": "component-SelectComponent-6b6bbc027b3f42cb5701d6328cee782c5c057dfc2230275c66c9fae40db718e9f0b35f502da58a365c155e14e6b70b75f03d6593975bc6560243015aef1bd6b2",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [
+                {
+                    "name": "{\n    provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => SelectComponent), multi: true,\n}",
+                    "type": "component"
+                }
+            ],
+            "selector": "lib-select",
+            "styleUrls": [
+                "./select.component.css"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./select.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "disabled",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 39,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "multiple",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 40,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "options",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 37,
+                    "type": "SelectOption[]",
+                    "decorators": []
+                },
+                {
+                    "name": "placeholder",
+                    "defaultValue": "'Select an option'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 38,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "required",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 41,
+                    "type": "boolean",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "openedChange",
+                    "defaultValue": "new EventEmitter<boolean>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 46,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "selectionChange",
+                    "defaultValue": "new EventEmitter<\n    string | number | boolean | null | (string | number | boolean | null)[]\n  >()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 43,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "dropdown",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ElementRef",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 49,
+                    "decorators": [
+                        {
+                            "name": "ViewChild",
+                            "stringifiedArguments": "'dropdown'"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                },
+                {
+                    "name": "filteredOptions",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "SelectOption[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 53
+                },
+                {
+                    "name": "focusedOptionIndex",
+                    "defaultValue": "-1",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 61
+                },
+                {
+                    "name": "isOpen",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 51
+                },
+                {
+                    "name": "onChange",
+                    "defaultValue": "() => {...}",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "function",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 95
+                },
+                {
+                    "name": "onTouched",
+                    "defaultValue": "() => {...}",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "function",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 102
+                },
+                {
+                    "name": "searchInput",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ElementRef<HTMLInputElement>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 48,
+                    "decorators": [
+                        {
+                            "name": "ViewChild",
+                            "stringifiedArguments": "'searchInput'"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                },
+                {
+                    "name": "searchText",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 52
+                },
+                {
+                    "name": "touched",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 60
+                },
+                {
+                    "name": "value",
+                    "defaultValue": "null",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string | number | boolean | null | (string | number | boolean | null)[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 54
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "clearSelection",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 176,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "filterOptions",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 169,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "handleClickOutside",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "MouseEvent",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 201,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "decorators": [
+                        {
+                            "name": "HostListener",
+                            "stringifiedArguments": "'document:click', ['$event']"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "MouseEvent",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "handleKeyboard",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "KeyboardEvent",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 222,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "decorators": [
+                        {
+                            "name": "HostListener",
+                            "stringifiedArguments": "'keydown', ['$event']"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "KeyboardEvent",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "isInvalid",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 191,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "isSelected",
+                    "args": [
+                        {
+                            "name": "option",
+                            "type": "SelectOption",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 162,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "option",
+                            "type": "SelectOption",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "markTouched",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 186,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "ngOnInit",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 65,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "registerOnChange",
+                    "args": [
+                        {
+                            "name": "fn",
+                            "type": "function",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "function": [
+                                {
+                                    "name": "val",
+                                    "type": "string | number | boolean | null | (string | number | boolean | null)[]",
+                                    "deprecated": false,
+                                    "deprecationMessage": ""
+                                }
+                            ]
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 114,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "fn",
+                            "type": "function",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "function": [
+                                {
+                                    "name": "val",
+                                    "type": "string | number | boolean | null | (string | number | boolean | null)[]",
+                                    "deprecated": false,
+                                    "deprecationMessage": ""
+                                }
+                            ],
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "registerOnTouched",
+                    "args": [
+                        {
+                            "name": "fn",
+                            "type": "function",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "function": []
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 127,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "fn",
+                            "type": "function",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "function": [],
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "scrollToFocusedOption",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 209,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "selectOption",
+                    "args": [
+                        {
+                            "name": "option",
+                            "type": "SelectOption",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 145,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "option",
+                            "type": "SelectOption",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "setDisabledState",
+                    "args": [
+                        {
+                            "name": "isDisabled",
+                            "type": "boolean",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 131,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "isDisabled",
+                            "type": "boolean",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "toggleDropdown",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 135,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "writeValue",
+                    "args": [
+                        {
+                            "name": "val",
+                            "type": "string | number | boolean | null | (string | number | boolean | null)[]",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 106,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "val",
+                            "type": "string | number | boolean | null | (string | number | boolean | null)[]",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [
+                {
+                    "name": "document:click",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "MouseEvent",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "argsDecorator": [
+                        "$event"
+                    ],
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 201
+                },
+                {
+                    "name": "keydown",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "KeyboardEvent",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "argsDecorator": [
+                        "$event"
+                    ],
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 222
+                }
+            ],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "FormsModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import {\n  Component,\n  Input,\n  Output,\n  EventEmitter,\n  forwardRef,\n  ViewChild,\n  ElementRef,\n  OnInit,\n  HostListener,\n  ChangeDetectorRef,\n} from '@angular/core';\nimport { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\n\nexport interface SelectOption {\n  label: string;\n  value: string | number | boolean | null;\n}\n\n@Component({\n  selector: 'lib-select',\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  templateUrl: './select.component.html',\n  styleUrls: ['./select.component.css'],\n  providers: [\n    {\n      provide: NG_VALUE_ACCESSOR,\n      useExisting: forwardRef(() => SelectComponent),\n      multi: true,\n    },\n  ],\n})\nexport class SelectComponent implements ControlValueAccessor, OnInit {\n  @Input() options: SelectOption[] = [];\n  @Input() placeholder = 'Select an option';\n  @Input() disabled = false;\n  @Input() multiple = false;\n  @Input() required = false;\n\n  @Output() selectionChange = new EventEmitter<\n    string | number | boolean | null | (string | number | boolean | null)[]\n  >();\n  @Output() openedChange = new EventEmitter<boolean>();\n\n  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;\n  @ViewChild('dropdown') dropdown!: ElementRef;\n\n  isOpen = false;\n  searchText = '';\n  filteredOptions: SelectOption[] = [];\n  value:\n    | string\n    | number\n    | boolean\n    | null\n    | (string | number | boolean | null)[] = null;\n  touched = false;\n  focusedOptionIndex = -1;\n\n  constructor(private cdr: ChangeDetectorRef) {}\n\n  ngOnInit() {\n    this.filteredOptions = [...this.options];\n  }\n\n  get displayValue(): string {\n    if (this.value === null || this.value === undefined) {\n      return this.placeholder;\n    }\n\n    if (this.multiple) {\n      if (Array.isArray(this.value) && this.value !== null) {\n        const selectedLabels = this.options\n          .filter((opt) =>\n            (this.value as (string | number | boolean | null)[]).includes(\n              opt.value\n            )\n          )\n          .map((opt) => opt.label);\n        return selectedLabels.length > 0\n          ? selectedLabels.join(', ')\n          : this.placeholder;\n      }\n      return this.placeholder;\n    }\n\n    const selectedOption = this.options.find((opt) => opt.value === this.value);\n    return selectedOption ? selectedOption.label : this.placeholder;\n  }\n\n  // ControlValueAccessor methods\n  onChange: (\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ) => void = () => {\n    // This empty implementation will be replaced by registerOnChange\n    // We intentionally don't use the val parameter here\n  };\n\n  onTouched: () => void = () => {\n    // This empty implementation will be replaced by registerOnTouched\n  };\n\n  writeValue(\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ): void {\n    this.value = val;\n    this.onChange(this.value);\n    this.cdr.detectChanges();\n  }\n\n  registerOnChange(\n    fn: (\n      val:\n        | string\n        | number\n        | boolean\n        | null\n        | (string | number | boolean | null)[]\n    ) => void\n  ): void {\n    this.onChange = fn;\n  }\n\n  registerOnTouched(fn: () => void): void {\n    this.onTouched = fn;\n  }\n\n  setDisabledState(isDisabled: boolean): void {\n    this.disabled = isDisabled;\n  }\n\n  toggleDropdown(): void {\n    if (this.disabled) return;\n    this.isOpen = !this.isOpen;\n    this.openedChange.emit(this.isOpen);\n    if (this.isOpen) {\n      setTimeout(() => this.searchInput?.nativeElement.focus(), 0);\n      this.focusedOptionIndex = -1;\n    }\n  }\n\n  selectOption(option: SelectOption): void {\n    if (this.disabled) return;\n    if (this.multiple) {\n      const current = Array.isArray(this.value) ? this.value : [];\n      this.value = current.includes(option.value)\n        ? current.filter((v) => v !== option.value)\n        : [...current, option.value];\n    } else {\n      this.value = option.value;\n      this.isOpen = false;\n      this.openedChange.emit(false);\n    }\n    this.markTouched();\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n  }\n\n  isSelected(option: SelectOption): boolean {\n    if (this.multiple && Array.isArray(this.value)) {\n      return this.value.includes(option.value);\n    }\n    return this.value === option.value;\n  }\n\n  filterOptions(): void {\n    this.filteredOptions = this.options.filter((opt) =>\n      opt.label.toLowerCase().includes(this.searchText.toLowerCase())\n    );\n    this.focusedOptionIndex = -1;\n  }\n\n  clearSelection(event: Event): void {\n    event.stopPropagation();\n    this.value = this.multiple ? [] : null;\n    this.searchText = '';\n    this.filteredOptions = [...this.options];\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n    this.markTouched();\n  }\n\n  markTouched(): void {\n    this.touched = true;\n    this.onTouched();\n  }\n\n  isInvalid(): boolean {\n    return (\n      this.required &&\n      (this.value === null ||\n        (Array.isArray(this.value) && this.value.length === 0)) &&\n      this.touched\n    );\n  }\n\n  @HostListener('document:click', ['$event'])\n  handleClickOutside(event: MouseEvent): void {\n    const target = event.target as HTMLElement;\n    if (this.isOpen && !target.closest('lib-select')) {\n      this.isOpen = false;\n      this.openedChange.emit(this.isOpen);\n    }\n  }\n\n  private scrollToFocusedOption(): void {\n    if (this.focusedOptionIndex >= 0 && this.dropdown?.nativeElement) {\n      const options = this.dropdown.nativeElement.querySelectorAll('li');\n      if (options[this.focusedOptionIndex]) {\n        options[this.focusedOptionIndex].scrollIntoView({\n          behavior: 'smooth',\n          block: 'nearest',\n        });\n      }\n    }\n  }\n\n  @HostListener('keydown', ['$event'])\n  handleKeyboard(event: KeyboardEvent): void {\n    if (!this.isOpen) return;\n\n    switch (event.key) {\n      case 'ArrowDown':\n        event.preventDefault();\n        if (this.focusedOptionIndex < this.filteredOptions.length - 1) {\n          this.focusedOptionIndex++;\n        } else {\n          this.focusedOptionIndex = 0; // Wrap around to start\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'ArrowUp':\n        event.preventDefault();\n        if (this.focusedOptionIndex > 0) {\n          this.focusedOptionIndex--;\n        } else {\n          this.focusedOptionIndex = this.filteredOptions.length - 1; // Wrap around to end\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'Enter':\n        event.preventDefault();\n        if (\n          this.focusedOptionIndex >= 0 &&\n          this.focusedOptionIndex < this.filteredOptions.length\n        ) {\n          this.selectOption(this.filteredOptions[this.focusedOptionIndex]);\n        }\n        break;\n\n      case 'Escape':\n        event.preventDefault();\n        this.isOpen = false;\n        this.openedChange.emit(false);\n        break;\n\n      default:\n        break;\n    }\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\r\n  display: block;\r\n}\r\n\r\n@keyframes fadeIn {\r\n  0% {\r\n    opacity: 0;\r\n    transform: scaleY(0.95);\r\n  }\r\n  100% {\r\n    opacity: 1;\r\n    transform: scaleY(1);\r\n  }\r\n}\r\n\r\n.animate-fadeIn {\r\n  animation: fadeIn 0.2s ease-out;\r\n}\r\n",
+                    "styleUrl": "./select.component.css"
+                }
+            ],
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "cdr",
+                        "type": "ChangeDetectorRef",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 61,
+                "jsdoctags": [
+                    {
+                        "name": "cdr",
+                        "type": "ChangeDetectorRef",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [],
+            "implements": [
+                "ControlValueAccessor",
+                "OnInit"
+            ],
+            "accessors": {
+                "displayValue": {
+                    "name": "displayValue",
+                    "getSignature": {
+                        "name": "displayValue",
+                        "type": "string",
+                        "returnType": "string",
+                        "line": 69
+                    }
+                }
+            },
+            "templateData": "<div class=\"relative w-full font-sans\">\n  <div\n    (click)=\"toggleDropdown()\"\n    (keydown)=\"handleKeyboard($event)\"\n    tabindex=\"0\"\n    class=\"flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500\"\n    [class.opacity-50]=\"disabled\"\n    [class.border-red-500]=\"isInvalid()\"\n    [attr.aria-expanded]=\"isOpen\"\n    [attr.aria-disabled]=\"disabled\"\n    [attr.aria-required]=\"required\"\n    [attr.aria-label]=\"placeholder\"\n  >\n    <span class=\"flex-grow truncate\">{{ displayValue }}</span>\n    <span\n      *ngIf=\"value !== null && value !== undefined && !disabled\"\n      (click)=\"clearSelection($event)\"\n      (keydown)=\"handleKeyboard($event)\"\n      tabindex=\"0\"\n      class=\"text-gray-400 hover:text-red-500 mr-2 focus:outline-none focus:ring-2 focus:ring-red-500\"\n    >\n      ✕\n    </span>\n    <span class=\"text-gray-500\">▼</span>\n  </div>\n\n  <div\n    #dropdown\n    *ngIf=\"isOpen\"\n    class=\"absolute mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-auto\"\n    role=\"listbox\"\n    [attr.aria-multiselectable]=\"multiple\"\n  >\n    <input\n      #searchInput\n      [(ngModel)]=\"searchText\"\n      (ngModelChange)=\"filterOptions()\"\n      class=\"w-full p-2 border-b border-gray-200 outline-none text-gray-700\"\n      placeholder=\"Search...\"\n      aria-label=\"Search options\"\n    />\n    <ul>\n      <li\n        *ngFor=\"let option of filteredOptions; let i = index\"\n        (click)=\"selectOption(option)\"\n        (keydown)=\"handleKeyboard($event)\"\n        tabindex=\"0\"\n        class=\"px-4 py-2 hover:bg-blue-100 cursor-pointer focus:bg-blue-100 focus:outline-none\"\n        [class.bg-blue-50]=\"isSelected(option)\"\n        [class.bg-blue-100]=\"i === focusedOptionIndex\"\n        [attr.aria-selected]=\"isSelected(option)\"\n        role=\"option\"\n      >\n        {{ option.label }}\n      </li>\n      <li *ngIf=\"filteredOptions.length === 0\" class=\"px-4 py-2 text-gray-500\">\n        No options found\n      </li>\n    </ul>\n  </div>\n\n  <div *ngIf=\"isInvalid()\" class=\"text-red-500 text-sm mt-1\">\n    Selection required.\n  </div>\n</div>\n"
         }
     ],
     "modules": [],
@@ -1511,7 +2225,27 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'accent',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "Basic",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Pick a color',\r\n    options: [\r\n      { label: 'Red', value: 'red' },\r\n      { label: 'Green', value: 'green' },\r\n      { label: 'Blue', value: 'blue' },\r\n      { label: 'Yellow', value: 'yellow' },\r\n    ],\r\n  },\r\n}"
+            },
+            {
+                "name": "Colored",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\r\n}"
             },
             {
                 "name": "BasicSnackBar",
@@ -1541,7 +2275,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "StorybookConfig",
-                "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
+                "defaultValue": "{\r\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\r\n  framework: {\r\r\n    name: '@storybook/angular',\r\r\n    options: {},\r\r\n  },\r\r\n  docs: {\r\r\n    autodocs: true,\r\r\n    defaultName: 'Docs',\r\r\n  },\r\r\n}"
             },
             {
                 "name": "ConfigurablePosition",
@@ -1561,7 +2295,27 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "CustomStyled",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 60,\r\n    color: 'primary',\r\n    variant: 'determinate',\r\n    class: 'h-6 rounded-lg',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\" [class]=\"class\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {},\r\r\n}"
             },
             {
                 "name": "CustomStyled",
@@ -1581,7 +2335,47 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    name: 'home',\r\n    size: 'md',\r\n    color: 'text-gray-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    name: 'home',\r\r\n    size: 'md',\r\r\n    color: 'text-gray-500',\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "StoryObj<PaginatorComponent>",
+                "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 25,\r\n    color: \"primary\",\r\n    variant: 'determinate',\r\n    bufferProgress: 0\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Determinate",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
+            },
+            {
+                "name": "DeterminateProgress",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\r\n}"
             },
             {
                 "name": "Default",
@@ -1641,7 +2435,37 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: true,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    disabled: true,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "GreenBuffer",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 40,\r\n    bufferProgress: 5,\r\n    color: 'success',\r\n    variant: 'buffer',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [buffer]=\"buffer\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "GreenProgress",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 70,\r\n    color: 'success',\r\n    variant: 'determinate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Large",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\r\n}"
             },
             {
                 "name": "DismissibleError",
@@ -1720,6 +2544,8 @@
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
+                "type": "Meta<LoadingSpinnerComponent>",
+                "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
                 "type": "Meta<ButtonComponent>",
                 "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
             },
@@ -1731,7 +2557,27 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<IconComponent>",
-                "defaultValue": "{\r\n  title: 'Components/Icon',\r\n  component: IconComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\n    size: { \r\n      control: 'radio', \r\n      options: ['sm', 'md', 'lg', 'xl'], \r\n      description: 'Size of the icon' \r\n    },\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\n  },\r\n}"
+                "defaultValue": "{\r\r\n  title: 'Components/Icon',\r\r\n  component: IconComponent,\r\r\n  tags: ['autodocs'],\r\r\n  argTypes: {\r\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\r\n    size: { \r\r\n      control: 'radio', \r\r\n      options: ['sm', 'md', 'lg', 'xl'], \r\r\n      description: 'Size of the icon' \r\r\n    },\r\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ButtonComponent>",
+                "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ProgressBarComponent>",
+                "defaultValue": "{\r\n  title: 'Components/Progress Bar',\r\n  component: ProgressBarComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    progress: {\r\n      control: { type: 'range', min: 0, max: 100, step: 1 },\r\n      description: 'Progress percentage (0 to 100)',\r\n    },\r\n    // buffer: {\r\n    //   control: { type: 'range', min: 0, max: 100, step: 1 },\r\n    //   description: 'Buffer progress percentage (used in buffer variant)',\r\n    // },\r\n    color: {\r\n      control: 'select',\r\n      options: ['primary', 'secondary', 'success', 'error'],\r\n      description: 'Color of the progress bar',\r\n    },\r\n    variant: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate', 'buffer', 'query'],\r\n      description: 'Progress bar type',\r\n    },\r\n    // class: {\r\n    //   control: 'text',\r\n    //   description: 'Additional Tailwind CSS classes for customization',\r\n    // },\r\n  },\r\r\n}"
             },
             {
                 "name": "meta",
@@ -1761,7 +2607,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'outline',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'outline',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\r\n  }),\r\r\n}"
             },
             {
                 "name": "parameters",
@@ -1771,7 +2617,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "object",
-                "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
+                "defaultValue": "{\r\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\r\n  controls: {\r\r\n    matchers: {\r\r\n      color: /(background|color)$/i,\r\r\n      date: /Date$/,\r\r\n    },\r\r\n  },\r\r\n}"
             },
             {
                 "name": "Primary",
@@ -1781,7 +2627,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "RedIndeterminate",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\r\n}"
             },
             {
                 "name": "RedIndeterminate",
@@ -1801,7 +2657,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    name: 'star',\r\n    size: 'sm',\r\n    color: 'text-blue-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    name: 'star',\r\r\n    size: 'sm',\r\r\n    color: 'text-blue-500',\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "Template",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "StoryObj<SelectComponent>",
+                "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n  }),\r\r\n}"
             },
             {
                 "name": "StackedAlerts",
@@ -1831,7 +2697,37 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+                "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'text',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\r\n  }),\r\n}"
+            },
+            {
+                "name": "Thick",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\n}"
+            },
+            {
+                "name": "WithMultiple",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Select multiple',\r\n    multiple: true,\r\n    options: [\r\n      { label: 'Apple', value: 'apple' },\r\n      { label: 'Banana', value: 'banana' },\r\n      { label: 'Mango', value: 'mango' },\r\n    ],\r\n  },\r\n}"
+            },
+            {
+                "name": "WithValidation",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Required field',\r\n    required: true,\r\n    options: [\r\n      { label: 'Item A', value: 'a' },\r\n      { label: 'Item B', value: 'b' },\r\n    ],\r\n  },\r\r\n}"
             },
             {
                 "name": "Thick",
@@ -1893,6 +2789,28 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
+                "rawtype": "StoryObj<ButtonComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<ProgressBarComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
                 "rawtype": "StoryObj<LoadingSpinnerComponent>",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
                 "deprecated": false,
@@ -1923,7 +2841,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
+                    "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'accent',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\r\n  }),\r\r\n}"
                 },
                 {
                     "name": "CustomStyled",
@@ -1983,7 +2901,121 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+                    "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'text',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\r\n  }),\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
+                {
+                    "name": "Basic",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Pick a color',\r\n    options: [\r\n      { label: 'Red', value: 'red' },\r\n      { label: 'Green', value: 'green' },\r\n      { label: 'Blue', value: 'blue' },\r\n      { label: 'Yellow', value: 'yellow' },\r\n    ],\r\n  },\r\n}"
+                },
+                {
+                    "name": "Template",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "StoryObj<SelectComponent>",
+                    "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n  }),\r\n}"
+                },
+                {
+                    "name": "WithMultiple",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Select multiple',\r\n    multiple: true,\r\n    options: [\r\n      { label: 'Apple', value: 'apple' },\r\n      { label: 'Banana', value: 'banana' },\r\n      { label: 'Mango', value: 'mango' },\r\n    ],\r\n  },\r\n}"
+                },
+                {
+                    "name": "WithValidation",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Required field',\r\n    required: true,\r\n    options: [\r\n      { label: 'Item A', value: 'a' },\r\n      { label: 'Item B', value: 'b' },\r\n    ],\r\n  },\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
+                {
+                    "name": "Colored",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\n}"
+                },
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {},\r\n}"
+                },
+                {
+                    "name": "Determinate",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
+                },
+                {
+                    "name": "DeterminateProgress",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\n}"
+                },
+                {
+                    "name": "Large",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<LoadingSpinnerComponent>",
+                    "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
+                },
+                {
+                    "name": "Thick",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\r\n}"
                 }
             ],
             "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
@@ -2297,13 +3329,13 @@
                     "kind": 183
                 }
             ],
-            "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts": [
+            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
                 {
                     "name": "Story",
                     "ctype": "miscellaneous",
                     "subtype": "typealias",
-                    "rawtype": "StoryObj<ButtonComponent>",
-                    "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                    "rawtype": "StoryObj<LoadingSpinnerComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -2317,6 +3349,32 @@
                     "subtype": "typealias",
                     "rawtype": "StoryObj<IconComponent>",
                     "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<ButtonComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<ProgressBarComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -2630,6 +3688,251 @@
                 "name": "Story",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Colored",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Determinate",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DeterminateProgress",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Large",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Thick",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "LoadingSpinnerComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "PaginatorComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/10",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "CustomStyled",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "GreenBuffer",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "GreenProgress",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "RedIndeterminate",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ProgressBarComponent",
+                "coveragePercent": 62,
+                "coverageCount": "5/8",
+                "status": "good"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Basic",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Template",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "WithMultiple",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "WithValidation",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "SelectComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/36",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "SelectOption",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
                 "status": "low"
             },
             {
