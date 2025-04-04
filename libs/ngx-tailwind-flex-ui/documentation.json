@@ -3352,48 +3352,7 @@
           "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
         }
       ],
-      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
-        {
-          "name": "Basic",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "object",
-          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Pick a color',\r\n    options: [\r\n      { label: 'Red', value: 'red' },\r\n      { label: 'Green', value: 'green' },\r\n      { label: 'Blue', value: 'blue' },\r\n      { label: 'Yellow', value: 'yellow' },\r\n    ],\r\n  },\r\n}"
-        },
-        {
-          "name": "Template",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n  }),\r\n}"
-        },
-        {
-          "name": "WithMultiple",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "object",
-          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Select multiple',\r\n    multiple: true,\r\n    options: [\r\n      { label: 'Apple', value: 'apple' },\r\n      { label: 'Banana', value: 'banana' },\r\n      { label: 'Mango', value: 'mango' },\r\n    ],\r\n  },\r\n}"
-        },
-        {
-          "name": "WithValidation",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "object",
-          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Required field',\r\n    required: true,\r\n    options: [\r\n      { label: 'Item A', value: 'a' },\r\n      { label: 'Item B', value: 'b' },\r\n    ],\r\n  },\r\n}"
-        }
-      ],
+
       "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
         {
           "name": "Colored",
@@ -3551,38 +3510,7 @@
           "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
         }
       ],
-      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
-        {
-          "name": "CustomizeDropdown",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  args: {\r\n    width: '300px',\r\n    options: [\r\n      { value: 'a', label: 'Alpha' },\r\n      { value: 'b', label: 'Beta' },\r\n      { value: 'c', label: 'Gamma' },\r\n    ],\r\n  },\r\n  argTypes: {\r\n    options: {\r\n      control: 'object',\r\n      description:\r\n        'Options for the dropdown. You can edit the label and value here.',\r\n    },\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Custom Dropdown</label>\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        [width]=\"width\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
-        },
-        {
-          "name": "Default",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
-        },
-        {
-          "name": "Multiple",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  args: { multiple: true },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
-        }
-      ],
+
       "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
         {
           "name": "CustomStyled",

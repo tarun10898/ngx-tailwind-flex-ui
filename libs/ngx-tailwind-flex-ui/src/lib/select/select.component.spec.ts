@@ -14,7 +14,7 @@ import { SelectOptionComponent } from './select-option.component';
 // Test host component
 @Component({
   standalone: true,
-  imports: [SelectComponent, SelectOptionComponent],
+  imports: [SelectComponent, SelectOptionComponent, CommonModule],
   template: `
     <lib-select>
       <lib-select-option value="1" label="Option 1"></lib-select-option>
