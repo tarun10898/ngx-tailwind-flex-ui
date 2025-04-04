@@ -229,7 +229,7 @@ export class SelectComponent implements ControlValueAccessor, AfterContentInit {
   removeSelected(val: string, event?: Event): void {
     event?.stopPropagation();
     if (this.multiple && Array.isArray(this.value)) {
-      this.value = this.value.filter(v => v !== val);
+      this.value = this.value.filter((v) => v !== val);
       this._onTouched();
       this.cdr.detectChanges();
     }
@@ -240,7 +240,7 @@ export class SelectComponent implements ControlValueAccessor, AfterContentInit {
   }
 
   getLabelForValue(val: string): string {
-    const found = this.options.find(o => o.value.toString() === val);
+    const found = this.options.find((o) => o.value.toString() === val);
     return found ? found.label : val;
   }
 

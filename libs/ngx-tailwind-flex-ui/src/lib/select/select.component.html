@@ -15,19 +15,54 @@
       (keydown)="handleKeydown($event)"
     />
     <!-- Dismiss/Clear icon for single select -->
-    <button *ngIf="!multiple && value" type="button" (click)="clearSelection($event)"
-      class="absolute right-8 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-red-500 focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    <button
+      *ngIf="!multiple && value"
+      type="button"
+      (click)="clearSelection($event)"
+      class="absolute right-8 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-red-500 focus:outline-none"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
       </svg>
     </button>
     <!-- Selected chips for multiple select -->
-    <div *ngIf="multiple && selectedValues.length" class="flex flex-wrap gap-1 mt-1">
-      <span *ngFor="let val of selectedValues" class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+    <div
+      *ngIf="multiple && selectedValues.length"
+      class="flex flex-wrap gap-1 mt-1"
+    >
+      <span
+        *ngFor="let val of selectedValues"
+        class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
+      >
         {{ getLabelForValue(val) }}
-        <button type="button" (click)="removeSelected(val, $event)" class="ml-1 text-blue-500 hover:text-red-500 focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <button
+          type="button"
+          (click)="removeSelected(val, $event)"
+          class="ml-1 text-blue-500 hover:text-red-500 focus:outline-none"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            class="h-4 w-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </span>
