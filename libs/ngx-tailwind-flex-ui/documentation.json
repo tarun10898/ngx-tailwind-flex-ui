@@ -1,5 +1,6 @@
 {
   "pipes": [],
+
   "interfaces": [
     {
       "name": "StackedAlertsArgs",
@@ -805,7 +806,7 @@
       "assetsDirs": [],
       "styleUrlsData": [
         {
-          "data": "@import url('https://fonts.googleapis.com/icon?family=Material+Icons');\r\n\r\n.material-icons {\r\n  font-family: 'Material Icons';\r\n  font-size: 18px; /* Matches text-lg in Tailwind */\r\n  font-weight: normal;\r\n  font-style: normal;\r\n  display: inline-block;\r\n  line-height: 1;\r\n  text-transform: none;\r\n  letter-spacing: normal;\r\n  word-wrap: normal;\r\n  white-space: nowrap;\r\n  direction: ltr;\r\n}\r\n\r\n.message {\r\n  max-width: 300px; /* Adjust as needed */\r\n  white-space: nowrap;\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n}\r\n\r\n.material-icons--custom-color {\r\n  color: inherit !important;\r\n}\r\n",
+          "data": "@import url('https://fonts.googleapis.com/icon?family=Material+Icons');\r\n\r\n@import 'tailwindcss/base';\r\n@import 'tailwindcss/components';\r\n@import 'tailwindcss/utilities';\r\n\r\n.material-icons {\r\n  font-family: 'Material Icons';\r\n  font-size: 18px; /* Matches text-lg in Tailwind */\r\n  font-weight: normal;\r\n  font-style: normal;\r\n  display: inline-block;\r\n  line-height: 1;\r\n  text-transform: none;\r\n  letter-spacing: normal;\r\n  word-wrap: normal;\r\n  white-space: nowrap;\r\n  direction: ltr;\r\n}\r\n\r\n.message {\r\n  max-width: 300px; /* Adjust as needed */\r\n  white-space: nowrap;\r\n  overflow: hidden;\r\n  text-overflow: ellipsis;\r\n}\r\n\r\n.material-icons--custom-color {\r\n  color: inherit !important;\r\n}\r\n",
           "styleUrl": "./alert.component.css"
         }
       ],
@@ -1615,6 +1616,7 @@
           }
         }
       },
+
       "templateData": "<div class=\"w-full bg-gray-200 rounded-full h-4 overflow-hidden relative\">\r\n\r\n  <!-- Determinate & Buffer Primary Progress -->\r\n  <div\r\n    *ngIf=\"variant === 'determinate' || variant === 'buffer'\"\r\n    class=\"h-full transition-all duration-300\"\r\n    [ngClass]=\"progressBarClass\"\r\n    [style.width.%]=\"progress\"\r\n    role=\"progressbar\"\r\n    [attr.aria-valuenow]=\"progress\"\r\n    aria-valuemin=\"0\"\r\n    aria-valuemax=\"100\"\r\n  ></div>\r\n\r\n  <!-- Indeterminate Animation -->\r\n  <div\r\n    *ngIf=\"variant === 'indeterminate'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-indeterminate\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Query Mode (Reversed Indeterminate) -->\r\n  <div\r\n    *ngIf=\"variant === 'query'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-query\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Buffer Secondary Progress -->\r\n  <!-- Buffer Secondary Progress Background -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full bg-gray-300 opacity-50\"\r\n[style.width.%]=\"bufferProgress\"\r\n></div>\r\n\r\n<!-- Buffer Animation Overlay -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n>\r\n<div class=\"buffer-wave\"></div>\r\n</div>\r\n\r\n\r\n</div>\r\n"
     },
     {
@@ -1929,11 +1931,12 @@
           "name": "closePanel",
           "args": [],
           "optional": false,
-          "returnType": "void",
+          "returnType": "SelectOptionComponent[]",
           "typeParameters": [],
           "line": 254,
           "deprecated": false,
-          "deprecationMessage": ""
+          "deprecationMessage": "",
+          "modifierKind": [123]
         },
         {
           "name": "focusNextOption",
@@ -2000,34 +2003,6 @@
           "name": "handleKeydown",
           "args": [
             {
-              "name": "event",
-              "type": "KeyboardEvent",
-              "deprecated": false,
-              "deprecationMessage": ""
-            }
-          ],
-          "optional": false,
-          "returnType": "void",
-          "typeParameters": [],
-          "line": 262,
-          "deprecated": false,
-          "deprecationMessage": "",
-          "jsdoctags": [
-            {
-              "name": "event",
-              "type": "KeyboardEvent",
-              "deprecated": false,
-              "deprecationMessage": "",
-              "tagName": {
-                "text": "param"
-              }
-            }
-          ]
-        },
-        {
-          "name": "isSelected",
-          "args": [
-            {
               "name": "option",
               "type": "SelectOptionComponent",
               "deprecated": false,
@@ -2037,9 +2012,44 @@
           "optional": false,
           "returnType": "boolean",
           "typeParameters": [],
+          "line": 262,
+          "deprecated": false,
+          "deprecationMessage": "",
+          "jsdoctags": [
+            {
+              "name": "option",
+              "type": "SelectOptionComponent",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "tagName": {
+                "text": "param"
+              }
+            }
+          ]
+        },
+        {
+          "name": "onDocumentClick",
+          "args": [
+            {
+              "name": "option",
+              "type": "SelectOptionComponent",
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "optional": false,
+          "returnType": "void",
+          "typeParameters": [],
           "line": 168,
           "deprecated": false,
           "deprecationMessage": "",
+          "decorators": [
+            {
+              "name": "HostListener",
+              "stringifiedArguments": "'document:click', ['$event']"
+            }
+          ],
+          "modifierKind": [170],
           "jsdoctags": [
             {
               "name": "option",
@@ -2258,7 +2268,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 145,
+          "line": 144,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -3083,7 +3093,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\n  }),\r\n}"
+        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\r\n  }),\r\n}"
       },
       {
         "name": "RedIndeterminate",
@@ -3096,20 +3106,20 @@
         "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
       },
       {
-        "name": "SingleExpansion",
+        "name": "SmallBlueIcon",
         "ctype": "miscellaneous",
         "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
         "defaultValue": "{\r\n  args: { multi: false },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Accordion Demo</label>\r\n      <lib-accordion [multi]=\"multi\">\r\n        <lib-accordion-panel header=\"Section 1\">\r\n          <p>Content for section 1</p>\r\n        </lib-accordion-panel>\r\n        <lib-accordion-panel header=\"Section 2\">\r\n          <p>Content for section 2</p>\r\n        </lib-accordion-panel>\r\n      </lib-accordion>\r\n    `,\r\n  }),\r\n}"
       },
       {
-        "name": "SmallBlueIcon",
+        "name": "Template",
         "ctype": "miscellaneous",
         "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
@@ -3143,7 +3153,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'text',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\r\n  }),\r\n}"
       },
       {
         "name": "Thick",
@@ -3309,6 +3319,7 @@
           "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
         }
       ],
+
       "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
         {
           "name": "BasicSnackBar",
@@ -3613,6 +3624,28 @@
           "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
         }
       ],
+      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
+        {
+          "name": "Default",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<SelectComponent>",
+          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [required]=\"required\"\r\n        [panelClass]=\"panelClass\"\r\n        [tabIndex]=\"tabIndex\"\r\n        [ariaLabel]=\"ariaLabel\"\r\n        [ariaLabelledby]=\"ariaLabelledby\"\r\n        [options]=\"options\"\r\n        (openedChange)=\"openedChange($event)\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n        (closed)=\"closed()\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
+        },
+        {
+          "name": "Multiple",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "object",
+          "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
+        }
+      ],
       "libs/ngx-tailwind-flex-ui/.storybook/preview.ts": [
         {
           "name": "link",
@@ -3629,28 +3662,6 @@
           "ctype": "miscellaneous",
           "subtype": "variable",
           "file": "libs/ngx-tailwind-flex-ui/.storybook/preview.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "object",
-          "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
-        }
-      ],
-      "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts": [
-        {
-          "name": "meta",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Meta<AccordionComponent>",
-          "defaultValue": "{\r\n  title: 'Components/Accordion',\r\n  component: AccordionComponent,\r\n  decorators: [\r\n    moduleMetadata({\r\n      imports: [AccordionComponent, AccordionPanelComponent],\r\n    }),\r\n  ],\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    multi: {\r\n      control: 'boolean',\r\n      description: 'Allow multiple panels to be open',\r\n    },\r\n  },\r\n}"
-        },
-        {
-          "name": "MultiExpansion",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
           "deprecated": false,
           "deprecationMessage": "",
           "type": "Story",
@@ -3784,64 +3795,6 @@
         "name": "parameters",
         "coveragePercent": 0,
         "coverageCount": "0/1",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion-panel.component.ts",
-        "type": "component",
-        "linktype": "component",
-        "name": "AccordionPanelComponent",
-        "coveragePercent": 0,
-        "coverageCount": "0/6",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
-        "type": "variable",
-        "linktype": "miscellaneous",
-        "linksubtype": "variable",
-        "name": "meta",
-        "coveragePercent": 0,
-        "coverageCount": "0/1",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
-        "type": "variable",
-        "linktype": "miscellaneous",
-        "linksubtype": "variable",
-        "name": "MultiExpansion",
-        "coveragePercent": 0,
-        "coverageCount": "0/1",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
-        "type": "variable",
-        "linktype": "miscellaneous",
-        "linksubtype": "variable",
-        "name": "SingleExpansion",
-        "coveragePercent": 0,
-        "coverageCount": "0/1",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
-        "type": "type alias",
-        "linktype": "miscellaneous",
-        "linksubtype": "typealias",
-        "name": "Story",
-        "coveragePercent": 0,
-        "coverageCount": "0/1",
-        "status": "low"
-      },
-      {
-        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.ts",
-        "type": "component",
-        "linktype": "component",
-        "name": "AccordionComponent",
-        "coveragePercent": 0,
-        "coverageCount": "0/4",
         "status": "low"
       },
       {
