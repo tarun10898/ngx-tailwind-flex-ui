@@ -1,0 +1,35 @@
+/* Use Tailwind classes for most styling, but we need some additional CSS for sticky columns */
+.sticky {
+  position: sticky;
+  box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+}
+
+.left-0 {
+  left: 0;
+}
+
+.left-16 {
+  left: 4rem;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Ensure horizontal scrolling works properly */
+.overflow-x-auto {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Add some responsiveness */
+@media (max-width: 640px) {
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  button {
+    margin-bottom: 0.5rem;
+  }
+}

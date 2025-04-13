@@ -1,6 +1,133 @@
 {
     "pipes": [],
-    "interfaces": [],
+    "interfaces": [
+        {
+            "name": "Column",
+            "id": "interface-Column-3b4d459c88d42ad13b189218de84ad30d5c22adbdd7b8146d0bd3ed8bc3c4ab77bc6679d5581778658c3b86e46aa40224b1f6e3ffb4269e357378444c77cd443",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import {\n  ChangeDetectionStrategy,\n  ChangeDetectorRef,\n  Component,\n  EventEmitter,\n  Input,\n  OnInit,\n  Output,\n} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\nimport { BehaviorSubject, Observable } from 'rxjs';\n\nexport interface PeriodicElement {\n  no: number;\n  name: string;\n  weight: number;\n  symbol: string;\n  [key: string]: number | string;\n}\n\nexport interface Column {\n  key: string;\n  label: string;\n  sticky?: boolean;\n  sortable?: boolean;\n}\n\n@Component({\n  selector: 'lib-data-table',\n  templateUrl: './data-table.component.html',\n  styleUrls: ['./data-table.component.css'],\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DataTableComponent implements OnInit {\n  @Input() set data(value: PeriodicElement[] | Observable<PeriodicElement[]>) {\n    if (value instanceof Observable) {\n      this.isObservableData = true;\n      this.dataSource$ = value;\n      this.dataSource$.subscribe((data) => {\n        this._data = data || [];\n        this.updateFilteredData();\n      });\n    } else {\n      this.isObservableData = false;\n      this._data = value || [];\n      this.updateFilteredData();\n    }\n  }\n\n  @Input() set columns(value: (string | Column)[]) {\n    if (value && value.length) {\n      this._columns = value.map((col) => {\n        if (typeof col === 'string') {\n          return { key: col, label: this.formatColumnLabel(col) };\n        }\n        return { ...col, label: col.label || this.formatColumnLabel(col.key) };\n      });\n    } else {\n      this._columns = [\n        { key: 'no', label: 'No.', sticky: true },\n        { key: 'name', label: 'Name', sticky: true },\n        { key: 'weight', label: 'Weight' },\n        { key: 'symbol', label: 'Symbol' },\n      ];\n    }\n    this.updateFilteredData();\n  }\n\n  get columns(): Column[] {\n    return this._columns;\n  }\n\n  @Input() expandable = false;\n  @Input() itemsPerPage = 5;\n  @Input() showPagination = true;\n  @Input() showFilter = true;\n  @Input() enableSelection = false;\n  @Output() selectionChange = new EventEmitter<PeriodicElement[]>();\n  @Output() dataChange = new EventEmitter<PeriodicElement[]>();\n\n  _data: PeriodicElement[] = [];\n  _columns: Column[] = [];\n  private dataSubject = new BehaviorSubject<PeriodicElement[]>([]);\n\n  dataSource$: Observable<PeriodicElement[]> = this.dataSubject.asObservable();\n  filteredData: PeriodicElement[] = [];\n  displayData: PeriodicElement[] = [];\n  isObservableData = false;\n  selectedRows: Set<number> = new Set();\n  expandedRows: Set<number> = new Set();\n\n  sortColumn: string | null = null;\n  sortDirection: 'asc' | 'desc' = 'asc';\n  currentPage = 1;\n  totalPages = 1;\n  filterText = '';\n\n  public cdr: ChangeDetectorRef;\n\n  constructor(cdr: ChangeDetectorRef) {\n    this.cdr = cdr;\n  }\n\n  ngOnInit(): void {\n    if (!this._data.length && !this.isObservableData) {\n      this._data = [\n        { no: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },\n        { no: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },\n        { no: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },\n        { no: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },\n        { no: 5, name: 'Boron', weight: 10.811, symbol: 'B' },\n      ];\n      this.updateFilteredData();\n    }\n  }\n\n  addColumn(key: string, label?: string): void {\n    if (!this.columns.some((col) => col.key === key)) {\n      this._columns.push({\n        key,\n        label: label || this.formatColumnLabel(key),\n      });\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  removeColumn(key: string): void {\n    const index = this._columns.findIndex((col) => col.key === key);\n    if (index !== -1) {\n      this._columns.splice(index, 1);\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  shuffleColumns(): void {\n    const stickyColumns = this._columns.filter((col) => col.sticky);\n    const nonStickyColumns = this._columns.filter((col) => !col.sticky);\n\n    for (let i = nonStickyColumns.length - 1; i > 0; i--) {\n      const j = Math.floor(Math.random() * (i + 1));\n      [nonStickyColumns[i], nonStickyColumns[j]] = [\n        nonStickyColumns[j],\n        nonStickyColumns[i],\n      ];\n    }\n\n    this._columns = [...stickyColumns, ...nonStickyColumns];\n    this.updateFilteredData();\n    this.cdr.markForCheck();\n  }\n\n  sort(column: string): void {\n    if (this.sortColumn === column) {\n      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';\n    } else {\n      this.sortColumn = column;\n      this.sortDirection = 'asc';\n    }\n    this.updateFilteredData();\n  }\n\n  filter(): void {\n    this.currentPage = 1;\n    this.updateFilteredData();\n  }\n\n  changePage(page: number): void {\n    this.currentPage = page;\n    this.updateDisplayData();\n  }\n\n  toggleRowSelection(index: number): void {\n    const elementNo = this.filteredData[index].no;\n    if (this.selectedRows.has(elementNo)) {\n      this.selectedRows.delete(elementNo);\n    } else {\n      this.selectedRows.add(elementNo);\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  isSelected(element: PeriodicElement): boolean {\n    return this.selectedRows.has(element.no);\n  }\n\n  toggleAllSelection(event: Event): void {\n    const checked = (event.target as HTMLInputElement).checked;\n    if (checked) {\n      this.filteredData.forEach((item) => this.selectedRows.add(item.no));\n    } else {\n      this.selectedRows.clear();\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  toggleRowExpansion(index: number): void {\n    const elementNo = this.displayData[index].no;\n    if (this.expandedRows.has(elementNo)) {\n      this.expandedRows.delete(elementNo);\n    } else {\n      this.expandedRows.add(elementNo);\n    }\n    this.cdr.markForCheck();\n  }\n\n  isExpanded(element: PeriodicElement): boolean {\n    return this.expandedRows.has(element.no);\n  }\n\n  addData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = [...this._data, element];\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = [...this._data, element];\n      this.updateFilteredData();\n    }\n  }\n\n  removeData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.updateFilteredData();\n    }\n  }\n\n  updateFilteredData(): void {\n    let filteredData = [...this._data];\n\n    if (this.filterText) {\n      const filterTextLower = this.filterText.toLowerCase();\n      filteredData = filteredData.filter((item) =>\n        Object.values(item).some(\n          (value) =>\n            value !== null &&\n            value !== undefined &&\n            String(value).toLowerCase().includes(filterTextLower)\n        )\n      );\n    }\n\n    if (this.sortColumn) {\n      filteredData.sort((a, b) => {\n        const valueA = a[this.sortColumn as string];\n        const valueB = b[this.sortColumn as string];\n        if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;\n        if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;\n        return 0;\n      });\n    }\n\n    this.filteredData = filteredData;\n    this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);\n    if (this.currentPage > this.totalPages)\n      this.currentPage = this.totalPages || 1;\n    this.updateDisplayData();\n  }\n\n  private updateDisplayData(): void {\n    if (this.showPagination) {\n      const startIndex = (this.currentPage - 1) * this.itemsPerPage;\n      this.displayData = this.filteredData.slice(\n        startIndex,\n        startIndex + this.itemsPerPage\n      );\n    } else {\n      this.displayData = this.filteredData;\n    }\n    this.cdr.markForCheck();\n  }\n\n  private formatColumnLabel(key: string): string {\n    return key.charAt(0).toUpperCase() + key.slice(1);\n  }\n}\n",
+            "properties": [
+                {
+                    "name": "key",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 23
+                },
+                {
+                    "name": "label",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 24
+                },
+                {
+                    "name": "sortable",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "boolean",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 26
+                },
+                {
+                    "name": "sticky",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "boolean",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 25
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        },
+        {
+            "name": "PeriodicElement",
+            "id": "interface-PeriodicElement-3b4d459c88d42ad13b189218de84ad30d5c22adbdd7b8146d0bd3ed8bc3c4ab77bc6679d5581778658c3b86e46aa40224b1f6e3ffb4269e357378444c77cd443",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import {\n  ChangeDetectionStrategy,\n  ChangeDetectorRef,\n  Component,\n  EventEmitter,\n  Input,\n  OnInit,\n  Output,\n} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\nimport { BehaviorSubject, Observable } from 'rxjs';\n\nexport interface PeriodicElement {\n  no: number;\n  name: string;\n  weight: number;\n  symbol: string;\n  [key: string]: number | string;\n}\n\nexport interface Column {\n  key: string;\n  label: string;\n  sticky?: boolean;\n  sortable?: boolean;\n}\n\n@Component({\n  selector: 'lib-data-table',\n  templateUrl: './data-table.component.html',\n  styleUrls: ['./data-table.component.css'],\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DataTableComponent implements OnInit {\n  @Input() set data(value: PeriodicElement[] | Observable<PeriodicElement[]>) {\n    if (value instanceof Observable) {\n      this.isObservableData = true;\n      this.dataSource$ = value;\n      this.dataSource$.subscribe((data) => {\n        this._data = data || [];\n        this.updateFilteredData();\n      });\n    } else {\n      this.isObservableData = false;\n      this._data = value || [];\n      this.updateFilteredData();\n    }\n  }\n\n  @Input() set columns(value: (string | Column)[]) {\n    if (value && value.length) {\n      this._columns = value.map((col) => {\n        if (typeof col === 'string') {\n          return { key: col, label: this.formatColumnLabel(col) };\n        }\n        return { ...col, label: col.label || this.formatColumnLabel(col.key) };\n      });\n    } else {\n      this._columns = [\n        { key: 'no', label: 'No.', sticky: true },\n        { key: 'name', label: 'Name', sticky: true },\n        { key: 'weight', label: 'Weight' },\n        { key: 'symbol', label: 'Symbol' },\n      ];\n    }\n    this.updateFilteredData();\n  }\n\n  get columns(): Column[] {\n    return this._columns;\n  }\n\n  @Input() expandable = false;\n  @Input() itemsPerPage = 5;\n  @Input() showPagination = true;\n  @Input() showFilter = true;\n  @Input() enableSelection = false;\n  @Output() selectionChange = new EventEmitter<PeriodicElement[]>();\n  @Output() dataChange = new EventEmitter<PeriodicElement[]>();\n\n  _data: PeriodicElement[] = [];\n  _columns: Column[] = [];\n  private dataSubject = new BehaviorSubject<PeriodicElement[]>([]);\n\n  dataSource$: Observable<PeriodicElement[]> = this.dataSubject.asObservable();\n  filteredData: PeriodicElement[] = [];\n  displayData: PeriodicElement[] = [];\n  isObservableData = false;\n  selectedRows: Set<number> = new Set();\n  expandedRows: Set<number> = new Set();\n\n  sortColumn: string | null = null;\n  sortDirection: 'asc' | 'desc' = 'asc';\n  currentPage = 1;\n  totalPages = 1;\n  filterText = '';\n\n  public cdr: ChangeDetectorRef;\n\n  constructor(cdr: ChangeDetectorRef) {\n    this.cdr = cdr;\n  }\n\n  ngOnInit(): void {\n    if (!this._data.length && !this.isObservableData) {\n      this._data = [\n        { no: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },\n        { no: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },\n        { no: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },\n        { no: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },\n        { no: 5, name: 'Boron', weight: 10.811, symbol: 'B' },\n      ];\n      this.updateFilteredData();\n    }\n  }\n\n  addColumn(key: string, label?: string): void {\n    if (!this.columns.some((col) => col.key === key)) {\n      this._columns.push({\n        key,\n        label: label || this.formatColumnLabel(key),\n      });\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  removeColumn(key: string): void {\n    const index = this._columns.findIndex((col) => col.key === key);\n    if (index !== -1) {\n      this._columns.splice(index, 1);\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  shuffleColumns(): void {\n    const stickyColumns = this._columns.filter((col) => col.sticky);\n    const nonStickyColumns = this._columns.filter((col) => !col.sticky);\n\n    for (let i = nonStickyColumns.length - 1; i > 0; i--) {\n      const j = Math.floor(Math.random() * (i + 1));\n      [nonStickyColumns[i], nonStickyColumns[j]] = [\n        nonStickyColumns[j],\n        nonStickyColumns[i],\n      ];\n    }\n\n    this._columns = [...stickyColumns, ...nonStickyColumns];\n    this.updateFilteredData();\n    this.cdr.markForCheck();\n  }\n\n  sort(column: string): void {\n    if (this.sortColumn === column) {\n      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';\n    } else {\n      this.sortColumn = column;\n      this.sortDirection = 'asc';\n    }\n    this.updateFilteredData();\n  }\n\n  filter(): void {\n    this.currentPage = 1;\n    this.updateFilteredData();\n  }\n\n  changePage(page: number): void {\n    this.currentPage = page;\n    this.updateDisplayData();\n  }\n\n  toggleRowSelection(index: number): void {\n    const elementNo = this.filteredData[index].no;\n    if (this.selectedRows.has(elementNo)) {\n      this.selectedRows.delete(elementNo);\n    } else {\n      this.selectedRows.add(elementNo);\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  isSelected(element: PeriodicElement): boolean {\n    return this.selectedRows.has(element.no);\n  }\n\n  toggleAllSelection(event: Event): void {\n    const checked = (event.target as HTMLInputElement).checked;\n    if (checked) {\n      this.filteredData.forEach((item) => this.selectedRows.add(item.no));\n    } else {\n      this.selectedRows.clear();\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  toggleRowExpansion(index: number): void {\n    const elementNo = this.displayData[index].no;\n    if (this.expandedRows.has(elementNo)) {\n      this.expandedRows.delete(elementNo);\n    } else {\n      this.expandedRows.add(elementNo);\n    }\n    this.cdr.markForCheck();\n  }\n\n  isExpanded(element: PeriodicElement): boolean {\n    return this.expandedRows.has(element.no);\n  }\n\n  addData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = [...this._data, element];\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = [...this._data, element];\n      this.updateFilteredData();\n    }\n  }\n\n  removeData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.updateFilteredData();\n    }\n  }\n\n  updateFilteredData(): void {\n    let filteredData = [...this._data];\n\n    if (this.filterText) {\n      const filterTextLower = this.filterText.toLowerCase();\n      filteredData = filteredData.filter((item) =>\n        Object.values(item).some(\n          (value) =>\n            value !== null &&\n            value !== undefined &&\n            String(value).toLowerCase().includes(filterTextLower)\n        )\n      );\n    }\n\n    if (this.sortColumn) {\n      filteredData.sort((a, b) => {\n        const valueA = a[this.sortColumn as string];\n        const valueB = b[this.sortColumn as string];\n        if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;\n        if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;\n        return 0;\n      });\n    }\n\n    this.filteredData = filteredData;\n    this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);\n    if (this.currentPage > this.totalPages)\n      this.currentPage = this.totalPages || 1;\n    this.updateDisplayData();\n  }\n\n  private updateDisplayData(): void {\n    if (this.showPagination) {\n      const startIndex = (this.currentPage - 1) * this.itemsPerPage;\n      this.displayData = this.filteredData.slice(\n        startIndex,\n        startIndex + this.itemsPerPage\n      );\n    } else {\n      this.displayData = this.filteredData;\n    }\n    this.cdr.markForCheck();\n  }\n\n  private formatColumnLabel(key: string): string {\n    return key.charAt(0).toUpperCase() + key.slice(1);\n  }\n}\n",
+            "properties": [
+                {
+                    "name": "name",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 16
+                },
+                {
+                    "name": "no",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 15
+                },
+                {
+                    "name": "symbol",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 18
+                },
+                {
+                    "name": "weight",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 17
+                }
+            ],
+            "indexSignatures": [
+                {
+                    "id": "index-declaration-3b4d459c88d42ad13b189218de84ad30d5c22adbdd7b8146d0bd3ed8bc3c4ab77bc6679d5581778658c3b86e46aa40224b1f6e3ffb4269e357378444c77cd443",
+                    "args": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "returnType": "number | string",
+                    "line": 18,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "kind": 181,
+            "methods": [],
+            "extends": []
+        }
+    ],
     "injectables": [],
     "guards": [],
     "interceptors": [],
@@ -9,7 +136,7 @@
     "components": [
         {
             "name": "ButtonComponent",
-            "id": "component-ButtonComponent-7b549b2939b9a34abd922e3a0255997fdcdc44e13e0d3149f6f081fd94e8328dfcef16d4b504efc25d22156e814a32fd37682ce25460fb63fbe9f89259f6c17c",
+            "id": "component-ButtonComponent-4a0e060db7ffd16a679766d8091dfca8a2ed6c08cda8975d4756d1434716949e4060c639031b77f2ca38977983acb0622a2fa77db817a21a979f35ebeca9f233",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -74,7 +201,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input, HostBinding } from '@angular/core';\n\n@Component({\n  selector: 'lib-button',\n  standalone: true,\n  templateUrl: './button.component.html',\n  styles: [], // No inline styles; Tailwind handles it\n})\nexport class ButtonComponent {\n  @Input() variant: 'primary' | 'accent' | 'outline' | 'text' = 'primary';\n  @Input() disabled = false;\n  @Input() class = ''; // Allow users to pass custom Tailwind classes\n\n  @HostBinding('class') get hostClasses() {\n    const baseClasses =\n      'inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors duration-200';\n    const variantClasses = {\n      primary:\n        'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',\n      accent:\n        'bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',\n      outline:\n        'border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2',\n      text: 'text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2',\n    };\n    const disabledClasses = this.disabled\n      ? 'opacity-50 cursor-not-allowed'\n      : '';\n\n    return `${baseClasses} ${variantClasses[this.variant]} ${disabledClasses} ${\n      this.class\n    }`.trim();\n  }\n}\n",
+            "sourceCode": "import { Component, Input, HostBinding } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'lib-button',\r\n  standalone: true,\r\n  templateUrl: './button.component.html',\r\n  styles: [], // No inline styles; Tailwind handles it\r\n})\r\nexport class ButtonComponent {\r\n  @Input() variant: 'primary' | 'accent' | 'outline' | 'text' = 'primary';\r\n  @Input() disabled = false;\r\n  @Input() class = ''; // Allow users to pass custom Tailwind classes\r\n\r\n  @HostBinding('class') get hostClasses() {\r\n    const baseClasses =\r\n      'inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors duration-200';\r\n    const variantClasses = {\r\n      primary:\r\n        'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',\r\n      accent:\r\n        'bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',\r\n      outline:\r\n        'border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2',\r\n      text: 'text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2',\r\n    };\r\n    const disabledClasses = this.disabled\r\n      ? 'opacity-50 cursor-not-allowed'\r\n      : '';\r\n\r\n    return `${baseClasses} ${variantClasses[this.variant]} ${disabledClasses} ${\r\n      this.class\r\n    }`.trim();\r\n  }\r\n}\r\n",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
@@ -90,59 +217,692 @@
                     }
                 }
             },
-            "templateData": "<button [disabled]=\"disabled\">\n  <ng-content></ng-content>\n</button>\n"
+            "templateData": "<button [disabled]=\"disabled\">\r\n  <ng-content></ng-content>\r\n</button>\r\n"
         },
         {
-            "name": "IconComponent",
-            "id": "component-IconComponent-5aa773a6e880c2e7321715a97108ab13b79bb19e782154c23dd13ec81d958ee42c3cc1a64ae98a42a5ed510500e262d6416046a36c79ddd1e54057a95c34f581",
-            "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.component.ts",
+            "name": "DataTableComponent",
+            "id": "component-DataTableComponent-3b4d459c88d42ad13b189218de84ad30d5c22adbdd7b8146d0bd3ed8bc3c4ab77bc6679d5581778658c3b86e46aa40224b1f6e3ffb4269e357378444c77cd443",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+            "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
             "entryComponents": [],
             "inputs": [],
             "outputs": [],
             "providers": [],
-            "selector": "lib-icon",
+            "selector": "lib-data-table",
             "styleUrls": [
-                "./icon.component.css"
+                "./data-table.component.css"
             ],
             "styles": [],
             "templateUrl": [
-                "./icon.component.html"
+                "./data-table.component.html"
             ],
             "viewProviders": [],
             "hostDirectives": [],
             "inputsClass": [
                 {
-                    "name": "color",
-                    "defaultValue": "'text-gray-500'",
+                    "name": "columns",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 14,
-                    "type": "string",
+                    "line": 53,
+                    "type": "[]",
                     "decorators": []
                 },
                 {
-                    "name": "name",
-                    "defaultValue": "'home'",
+                    "name": "data",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 12,
-                    "type": "string",
+                    "line": 38,
+                    "type": "[] | Observable",
                     "decorators": []
                 },
                 {
-                    "name": "size",
-                    "defaultValue": "'md'",
+                    "name": "enableSelection",
+                    "defaultValue": "false",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 13,
-                    "type": "\"sm\" | \"md\" | \"lg\" | \"xl\"",
+                    "line": 80,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "expandable",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 76,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "itemsPerPage",
+                    "defaultValue": "5",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 77,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "showFilter",
+                    "defaultValue": "true",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 79,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "showPagination",
+                    "defaultValue": "true",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 78,
+                    "type": "boolean",
                     "decorators": []
                 }
             ],
-            "outputsClass": [],
-            "propertiesClass": [],
-            "methodsClass": [],
+            "outputsClass": [
+                {
+                    "name": "dataChange",
+                    "defaultValue": "new EventEmitter<PeriodicElement[]>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 82,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "selectionChange",
+                    "defaultValue": "new EventEmitter<PeriodicElement[]>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 81,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "_columns",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Column[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 85
+                },
+                {
+                    "name": "_data",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "PeriodicElement[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 84
+                },
+                {
+                    "name": "cdr",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ChangeDetectorRef",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 101,
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "currentPage",
+                    "defaultValue": "1",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 97
+                },
+                {
+                    "name": "dataSource$",
+                    "defaultValue": "this.dataSubject.asObservable()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Observable<PeriodicElement[]>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 88
+                },
+                {
+                    "name": "dataSubject",
+                    "defaultValue": "new BehaviorSubject<PeriodicElement[]>([])",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 86,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "displayData",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "PeriodicElement[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 90
+                },
+                {
+                    "name": "expandedRows",
+                    "defaultValue": "new Set()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Set<number>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 93
+                },
+                {
+                    "name": "filteredData",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "PeriodicElement[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 89
+                },
+                {
+                    "name": "filterText",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 99
+                },
+                {
+                    "name": "isObservableData",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 91
+                },
+                {
+                    "name": "selectedRows",
+                    "defaultValue": "new Set()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Set<number>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 92
+                },
+                {
+                    "name": "sortColumn",
+                    "defaultValue": "null",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string | null",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 95
+                },
+                {
+                    "name": "sortDirection",
+                    "defaultValue": "'asc'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "\"asc\" | \"desc\"",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 96
+                },
+                {
+                    "name": "totalPages",
+                    "defaultValue": "1",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 98
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "addColumn",
+                    "args": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        },
+                        {
+                            "name": "label",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "optional": true
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 120,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        },
+                        {
+                            "name": "label",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "optional": true,
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "addData",
+                    "args": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 223,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "changePage",
+                    "args": [
+                        {
+                            "name": "page",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 172,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "page",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "filter",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 167,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "formatColumnLabel",
+                    "args": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "string",
+                    "typeParameters": [],
+                    "line": 288,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "isExpanded",
+                    "args": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 219,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "isSelected",
+                    "args": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 191,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "ngOnInit",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 107,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "removeColumn",
+                    "args": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 131,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "removeData",
+                    "args": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 233,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "element",
+                            "type": "PeriodicElement",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "shuffleColumns",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 140,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "sort",
+                    "args": [
+                        {
+                            "name": "column",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 157,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "column",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "toggleAllSelection",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 195,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "toggleRowExpansion",
+                    "args": [
+                        {
+                            "name": "index",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 209,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "index",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "toggleRowSelection",
+                    "args": [
+                        {
+                            "name": "index",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 177,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "index",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "updateDisplayData",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 275,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "updateFilteredData",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 243,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
             "deprecated": false,
             "deprecationMessage": "",
             "hostBindings": [],
@@ -152,46 +912,127 @@
                 {
                     "name": "CommonModule",
                     "type": "module"
+                },
+                {
+                    "name": "FormsModule",
+                    "type": "module"
                 }
             ],
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common'; \n\n@Component({\n  selector: 'lib-icon',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './icon.component.html',\n  styleUrls: ['./icon.component.css'],\n})\nexport class IconComponent {\n  @Input() name = 'home';\n  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'md';\n  @Input() color = 'text-gray-500';\n\n  get sizeClass(): string {\n    const sizeMap = {\n      sm: 'text-sm',\n      md: 'text-base',\n      lg: 'text-2xl',\n      xl: 'text-4xl',\n    };\n    return sizeMap[this.size] || sizeMap.md;\n  }\n\n  get colorClass(): string {\n    return this.color;\n  }\n}\n",
+            "sourceCode": "import {\n  ChangeDetectionStrategy,\n  ChangeDetectorRef,\n  Component,\n  EventEmitter,\n  Input,\n  OnInit,\n  Output,\n} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\nimport { BehaviorSubject, Observable } from 'rxjs';\n\nexport interface PeriodicElement {\n  no: number;\n  name: string;\n  weight: number;\n  symbol: string;\n  [key: string]: number | string;\n}\n\nexport interface Column {\n  key: string;\n  label: string;\n  sticky?: boolean;\n  sortable?: boolean;\n}\n\n@Component({\n  selector: 'lib-data-table',\n  templateUrl: './data-table.component.html',\n  styleUrls: ['./data-table.component.css'],\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DataTableComponent implements OnInit {\n  @Input() set data(value: PeriodicElement[] | Observable<PeriodicElement[]>) {\n    if (value instanceof Observable) {\n      this.isObservableData = true;\n      this.dataSource$ = value;\n      this.dataSource$.subscribe((data) => {\n        this._data = data || [];\n        this.updateFilteredData();\n      });\n    } else {\n      this.isObservableData = false;\n      this._data = value || [];\n      this.updateFilteredData();\n    }\n  }\n\n  @Input() set columns(value: (string | Column)[]) {\n    if (value && value.length) {\n      this._columns = value.map((col) => {\n        if (typeof col === 'string') {\n          return { key: col, label: this.formatColumnLabel(col) };\n        }\n        return { ...col, label: col.label || this.formatColumnLabel(col.key) };\n      });\n    } else {\n      this._columns = [\n        { key: 'no', label: 'No.', sticky: true },\n        { key: 'name', label: 'Name', sticky: true },\n        { key: 'weight', label: 'Weight' },\n        { key: 'symbol', label: 'Symbol' },\n      ];\n    }\n    this.updateFilteredData();\n  }\n\n  get columns(): Column[] {\n    return this._columns;\n  }\n\n  @Input() expandable = false;\n  @Input() itemsPerPage = 5;\n  @Input() showPagination = true;\n  @Input() showFilter = true;\n  @Input() enableSelection = false;\n  @Output() selectionChange = new EventEmitter<PeriodicElement[]>();\n  @Output() dataChange = new EventEmitter<PeriodicElement[]>();\n\n  _data: PeriodicElement[] = [];\n  _columns: Column[] = [];\n  private dataSubject = new BehaviorSubject<PeriodicElement[]>([]);\n\n  dataSource$: Observable<PeriodicElement[]> = this.dataSubject.asObservable();\n  filteredData: PeriodicElement[] = [];\n  displayData: PeriodicElement[] = [];\n  isObservableData = false;\n  selectedRows: Set<number> = new Set();\n  expandedRows: Set<number> = new Set();\n\n  sortColumn: string | null = null;\n  sortDirection: 'asc' | 'desc' = 'asc';\n  currentPage = 1;\n  totalPages = 1;\n  filterText = '';\n\n  public cdr: ChangeDetectorRef;\n\n  constructor(cdr: ChangeDetectorRef) {\n    this.cdr = cdr;\n  }\n\n  ngOnInit(): void {\n    if (!this._data.length && !this.isObservableData) {\n      this._data = [\n        { no: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },\n        { no: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },\n        { no: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },\n        { no: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },\n        { no: 5, name: 'Boron', weight: 10.811, symbol: 'B' },\n      ];\n      this.updateFilteredData();\n    }\n  }\n\n  addColumn(key: string, label?: string): void {\n    if (!this.columns.some((col) => col.key === key)) {\n      this._columns.push({\n        key,\n        label: label || this.formatColumnLabel(key),\n      });\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  removeColumn(key: string): void {\n    const index = this._columns.findIndex((col) => col.key === key);\n    if (index !== -1) {\n      this._columns.splice(index, 1);\n      this.updateFilteredData();\n      this.cdr.markForCheck();\n    }\n  }\n\n  shuffleColumns(): void {\n    const stickyColumns = this._columns.filter((col) => col.sticky);\n    const nonStickyColumns = this._columns.filter((col) => !col.sticky);\n\n    for (let i = nonStickyColumns.length - 1; i > 0; i--) {\n      const j = Math.floor(Math.random() * (i + 1));\n      [nonStickyColumns[i], nonStickyColumns[j]] = [\n        nonStickyColumns[j],\n        nonStickyColumns[i],\n      ];\n    }\n\n    this._columns = [...stickyColumns, ...nonStickyColumns];\n    this.updateFilteredData();\n    this.cdr.markForCheck();\n  }\n\n  sort(column: string): void {\n    if (this.sortColumn === column) {\n      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';\n    } else {\n      this.sortColumn = column;\n      this.sortDirection = 'asc';\n    }\n    this.updateFilteredData();\n  }\n\n  filter(): void {\n    this.currentPage = 1;\n    this.updateFilteredData();\n  }\n\n  changePage(page: number): void {\n    this.currentPage = page;\n    this.updateDisplayData();\n  }\n\n  toggleRowSelection(index: number): void {\n    const elementNo = this.filteredData[index].no;\n    if (this.selectedRows.has(elementNo)) {\n      this.selectedRows.delete(elementNo);\n    } else {\n      this.selectedRows.add(elementNo);\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  isSelected(element: PeriodicElement): boolean {\n    return this.selectedRows.has(element.no);\n  }\n\n  toggleAllSelection(event: Event): void {\n    const checked = (event.target as HTMLInputElement).checked;\n    if (checked) {\n      this.filteredData.forEach((item) => this.selectedRows.add(item.no));\n    } else {\n      this.selectedRows.clear();\n    }\n    const selectedElements = this._data.filter((item) =>\n      this.selectedRows.has(item.no)\n    );\n    this.selectionChange.emit(selectedElements);\n    this.cdr.markForCheck();\n  }\n\n  toggleRowExpansion(index: number): void {\n    const elementNo = this.displayData[index].no;\n    if (this.expandedRows.has(elementNo)) {\n      this.expandedRows.delete(elementNo);\n    } else {\n      this.expandedRows.add(elementNo);\n    }\n    this.cdr.markForCheck();\n  }\n\n  isExpanded(element: PeriodicElement): boolean {\n    return this.expandedRows.has(element.no);\n  }\n\n  addData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = [...this._data, element];\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = [...this._data, element];\n      this.updateFilteredData();\n    }\n  }\n\n  removeData(element: PeriodicElement): void {\n    if (this.isObservableData) {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.dataChange.emit(this._data);\n    } else {\n      this._data = this._data.filter((item) => item.no !== element.no);\n      this.updateFilteredData();\n    }\n  }\n\n  updateFilteredData(): void {\n    let filteredData = [...this._data];\n\n    if (this.filterText) {\n      const filterTextLower = this.filterText.toLowerCase();\n      filteredData = filteredData.filter((item) =>\n        Object.values(item).some(\n          (value) =>\n            value !== null &&\n            value !== undefined &&\n            String(value).toLowerCase().includes(filterTextLower)\n        )\n      );\n    }\n\n    if (this.sortColumn) {\n      filteredData.sort((a, b) => {\n        const valueA = a[this.sortColumn as string];\n        const valueB = b[this.sortColumn as string];\n        if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;\n        if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;\n        return 0;\n      });\n    }\n\n    this.filteredData = filteredData;\n    this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);\n    if (this.currentPage > this.totalPages)\n      this.currentPage = this.totalPages || 1;\n    this.updateDisplayData();\n  }\n\n  private updateDisplayData(): void {\n    if (this.showPagination) {\n      const startIndex = (this.currentPage - 1) * this.itemsPerPage;\n      this.displayData = this.filteredData.slice(\n        startIndex,\n        startIndex + this.itemsPerPage\n      );\n    } else {\n      this.displayData = this.filteredData;\n    }\n    this.cdr.markForCheck();\n  }\n\n  private formatColumnLabel(key: string): string {\n    return key.charAt(0).toUpperCase() + key.slice(1);\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
-                    "data": ".material-icons {\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    vertical-align: middle;\n}",
-                    "styleUrl": "./icon.component.css"
+                    "data": "/* Use Tailwind classes for most styling, but we need some additional CSS for sticky columns */\r\n.sticky {\r\n  position: sticky;\r\n  box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);\r\n}\r\n\r\n.left-0 {\r\n  left: 0;\r\n}\r\n\r\n.left-16 {\r\n  left: 4rem;\r\n}\r\n\r\ntable {\r\n  border-collapse: separate;\r\n  border-spacing: 0;\r\n}\r\n\r\n/* Ensure horizontal scrolling works properly */\r\n.overflow-x-auto {\r\n  overflow-x: auto;\r\n  max-width: 100%;\r\n}\r\n\r\n/* Add some responsiveness */\r\n@media (max-width: 640px) {\r\n  .flex-wrap {\r\n    flex-wrap: wrap;\r\n  }\r\n\r\n  button {\r\n    margin-bottom: 0.5rem;\r\n  }\r\n}\r\n",
+                    "styleUrl": "./data-table.component.css"
                 }
             ],
             "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "cdr",
+                        "type": "ChangeDetectorRef",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 101,
+                "jsdoctags": [
+                    {
+                        "name": "cdr",
+                        "type": "ChangeDetectorRef",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
             "extends": [],
+            "implements": [
+                "OnInit"
+            ],
             "accessors": {
-                "sizeClass": {
-                    "name": "sizeClass",
-                    "getSignature": {
-                        "name": "sizeClass",
-                        "type": "string",
-                        "returnType": "string",
-                        "line": 16
+                "data": {
+                    "name": "data",
+                    "setSignature": {
+                        "name": "data",
+                        "type": "void",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "args": [
+                            {
+                                "name": "value",
+                                "type": "PeriodicElement[] | Observable<PeriodicElement[]>",
+                                "deprecated": false,
+                                "deprecationMessage": ""
+                            }
+                        ],
+                        "returnType": "void",
+                        "line": 38,
+                        "jsdoctags": [
+                            {
+                                "name": "value",
+                                "type": "PeriodicElement[] | Observable<PeriodicElement[]>",
+                                "deprecated": false,
+                                "deprecationMessage": "",
+                                "tagName": {
+                                    "text": "param"
+                                }
+                            }
+                        ]
                     }
                 },
-                "colorClass": {
-                    "name": "colorClass",
+                "columns": {
+                    "name": "columns",
+                    "setSignature": {
+                        "name": "columns",
+                        "type": "void",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "args": [
+                            {
+                                "name": "value",
+                                "type": "(string | Column)[]",
+                                "deprecated": false,
+                                "deprecationMessage": ""
+                            }
+                        ],
+                        "returnType": "void",
+                        "line": 53,
+                        "jsdoctags": [
+                            {
+                                "name": "value",
+                                "type": "(string | Column)[]",
+                                "deprecated": false,
+                                "deprecationMessage": "",
+                                "tagName": {
+                                    "text": "param"
+                                }
+                            }
+                        ]
+                    },
                     "getSignature": {
-                        "name": "colorClass",
-                        "type": "string",
-                        "returnType": "string",
-                        "line": 26
+                        "name": "columns",
+                        "type": "[]",
+                        "returnType": "Column[]",
+                        "line": 72
                     }
                 }
             },
-            "templateData": "<span class=\"material-icons\" [ngClass]=\"[sizeClass, colorClass]\">\n    {{ name }}\n</span>\n  "
+            "templateData": "<div class=\"w-full overflow-hidden\">\n  <!-- Controls Section -->\n  <div class=\"mb-4 flex flex-wrap gap-2\">\n    <!-- Column Management -->\n    <div class=\"flex space-x-2\">\n      <button\n        class=\"px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600\"\n        (click)=\"shuffleColumns()\"\n      >\n        Shuffle Columns\n      </button>\n      <button\n        class=\"px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600\"\n        (click)=\"addColumn('position', 'Position')\"\n      >\n        Add Column\n      </button>\n      <button\n        class=\"px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600\"\n        (click)=\"removeColumn('weight')\"\n      >\n        Remove Weight\n      </button>\n    </div>\n\n    <!-- Data Management -->\n    <div class=\"flex space-x-2\">\n      <button\n        class=\"px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600\"\n        (click)=\"\n          addData({\n            no: _data.length + 1,\n            name: 'New Element',\n            weight: 0,\n            symbol: 'Ne'\n          })\n        \"\n      >\n        Add Data\n      </button>\n      <button\n        class=\"px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600\"\n        (click)=\"removeData(_data[0])\"\n        [disabled]=\"_data.length === 0\"\n      >\n        Remove Data\n      </button>\n    </div>\n  </div>\n\n  <!-- Filter -->\n  <div *ngIf=\"showFilter\" class=\"mb-4\">\n    <input\n      type=\"text\"\n      [(ngModel)]=\"filterText\"\n      (input)=\"filter()\"\n      placeholder=\"Filter table...\"\n      class=\"w-full p-2 border border-gray-300 rounded\"\n    />\n  </div>\n\n  <!-- Table -->\n  <div class=\"overflow-x-auto\">\n    <table\n      class=\"min-w-full bg-white border border-gray-200\"\n      *ngIf=\"displayData.length > 0 || columns.length > 0\"\n    >\n      <!-- Header -->\n      <thead>\n        <tr class=\"bg-gray-100\">\n          <!-- Selection Column -->\n          <th *ngIf=\"enableSelection\" class=\"p-2 border-b border-r\">\n            <input\n              type=\"checkbox\"\n              (change)=\"toggleAllSelection($event)\"\n              [checked]=\"\n                selectedRows.size === filteredData.length &&\n                filteredData.length > 0\n              \"\n            />\n          </th>\n\n          <!-- Expansion Column -->\n          <th *ngIf=\"expandable\" class=\"p-2 border-b border-r w-10\"></th>\n\n          <!-- Data Columns -->\n          <th\n            *ngFor=\"let column of columns\"\n            class=\"p-2 border-b border-r cursor-pointer\"\n            [class.sticky]=\"column.sticky\"\n            [class.left-0]=\"column.key === 'no'\"\n            [class.left-16]=\"column.key === 'name'\"\n            [style.background-color]=\"column.sticky ? '#f9fafb' : ''\"\n            [style.z-index]=\"column.sticky ? '10' : '1'\"\n            (click)=\"sort(column.key)\"\n          >\n            <div class=\"flex items-center\">\n              <span>{{ column.label }}</span>\n              <span *ngIf=\"sortColumn === column.key\" class=\"ml-1\">\n                {{ sortDirection === 'asc' ? '▲' : '▼' }}\n              </span>\n            </div>\n          </th>\n        </tr>\n      </thead>\n\n      <!-- Body -->\n      <tbody>\n        <ng-container *ngFor=\"let element of displayData; let i = index\">\n          <!-- Main Row -->\n          <tr class=\"hover:bg-gray-50\">\n            <!-- Selection Column -->\n            <td *ngIf=\"enableSelection\" class=\"p-2 border-b border-r\">\n              <input\n                type=\"checkbox\"\n                [checked]=\"isSelected(element)\"\n                (change)=\"toggleRowSelection(i)\"\n              />\n            </td>\n\n            <!-- Expansion Column -->\n            <td *ngIf=\"expandable\" class=\"p-2 border-b border-r text-center\">\n              <button\n                class=\"focus:outline-none\"\n                (click)=\"toggleRowExpansion(i)\"\n              >\n                {{ isExpanded(element) ? '▼' : '▶' }}\n              </button>\n            </td>\n\n            <!-- Data Columns -->\n            <td\n              *ngFor=\"let column of columns\"\n              class=\"p-2 border-b border-r\"\n              [class.sticky]=\"column.sticky\"\n              [class.left-0]=\"column.key === 'no'\"\n              [class.left-16]=\"column.key === 'name'\"\n              [style.background-color]=\"column.sticky ? '#ffffff' : ''\"\n              [style.z-index]=\"column.sticky ? '10' : '1'\"\n            >\n              {{ element[column.key] !== undefined ? element[column.key] : '' }}\n            </td>\n          </tr>\n\n          <!-- Expanded Row -->\n          <tr *ngIf=\"expandable && isExpanded(element)\" class=\"bg-gray-100\">\n            <td\n              [attr.colspan]=\"\n                columns.length +\n                (enableSelection ? 1 : 0) +\n                (expandable ? 1 : 0)\n              \"\n              class=\"p-4 border-b\"\n            >\n              <div class=\"p-2 bg-gray-50 rounded\">\n                <h3 class=\"font-semibold\">\n                  Secondary row for the element {{ element.name }}\n                </h3>\n                <p>Symbol: {{ element.symbol }}</p>\n                <p>Weight: {{ element.weight }} g/mol</p>\n                <p>Atomic Number: {{ element.no }}</p>\n              </div>\n            </td>\n          </tr>\n        </ng-container>\n\n        <!-- Empty State -->\n        <tr *ngIf=\"displayData.length === 0\">\n          <td\n            [attr.colspan]=\"\n              columns.length + (enableSelection ? 1 : 0) + (expandable ? 1 : 0)\n            \"\n            class=\"p-4 text-center\"\n          >\n            No data available\n          </td>\n        </tr>\n      </tbody>\n    </table>\n    <div\n      *ngIf=\"displayData.length === 0 && columns.length === 0\"\n      class=\"text-center p-4\"\n    >\n      No columns or data defined\n    </div>\n  </div>\n\n  <!-- Pagination -->\n  <div\n    *ngIf=\"showPagination && totalPages > 1\"\n    class=\"mt-4 flex justify-between items-center\"\n  >\n    <div>\n      <span class=\"text-sm text-gray-600\">\n        Page {{ currentPage }} of {{ totalPages }}\n      </span>\n    </div>\n    <div class=\"space-x-2\">\n      <button\n        class=\"px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50\"\n        [disabled]=\"currentPage === 1\"\n        (click)=\"changePage(currentPage - 1)\"\n      >\n        Previous\n      </button>\n      <button\n        class=\"px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50\"\n        [disabled]=\"currentPage === totalPages\"\n        (click)=\"changePage(currentPage + 1)\"\n      >\n        Next\n      </button>\n    </div>\n  </div>\n</div>\n"
         },
         {
             "name": "IconComponent",
-            "id": "component-IconComponent-f4ffddc67d4dc8cdcc909de572d3660df47682439e6a9f4405942573613c1afc2dac2183ba5b0f69bbb0568ec3eb59ac6e3bfa8c56f5eecf072b8b573f060f08",
+            "id": "component-IconComponent-f8319707c4db8c28b1c60cee96154c58150cc29b3cf08e5d353aea2d6c0988772ae60eaf015395a6d4d3e8fb7cf4bea0e18774b39cae83d9e473d3a30a4a0fe0",
             "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -254,11 +1095,11 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'lib-icon',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './icon.component.html',\n  styleUrls: ['./icon.component.css'],\n})\nexport class IconComponent {\n  @Input() name = 'home';\n  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'md';\n  @Input() color = 'text-gray-500';\n\n  get sizePx(): number {\n    const sizeMap: Record<string, number> = {\n      sm: 16,\n      md: 24,  // Default Material Icon size\n      lg: 32,\n      xl: 48,\n    };\n    return sizeMap[this.size] || sizeMap['md'];\n  }\n\n  get colorClass(): string {\n    return this.color;\n  }\n}\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'lib-icon',\r\n  standalone: true,\r\n  imports: [CommonModule],\r\n  templateUrl: './icon.component.html',\r\n  styleUrls: ['./icon.component.css'],\r\n})\r\nexport class IconComponent {\r\n  @Input() name = 'home';\r\n  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'md';\r\n  @Input() color = 'text-gray-500';\r\n\r\n  get sizePx(): number {\r\n    const sizeMap: Record<string, number> = {\r\n      sm: 16,\r\n      md: 24,  // Default Material Icon size\r\n      lg: 32,\r\n      xl: 48,\r\n    };\r\n    return sizeMap[this.size] || sizeMap['md'];\r\n  }\r\n\r\n  get colorClass(): string {\r\n    return this.color;\r\n  }\r\n}\r\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
-                    "data": ".material-icons {\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    vertical-align: middle;\n}",
+                    "data": ".material-icons {\r\n    display: inline-flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    vertical-align: middle;\r\n}",
                     "styleUrl": "./icon.component.css"
                 }
             ],
@@ -284,7 +1125,466 @@
                     }
                 }
             },
-            "templateData": "<span \n  class=\"material-icons\"\n  [ngClass]=\"colorClass\"\n  [style.font-size.px]=\"sizePx\">\n  {{ name }}\n</span>\n"
+            "templateData": "<span \r\n  class=\"material-icons\"\r\n  [ngClass]=\"colorClass\"\r\n  [style.font-size.px]=\"sizePx\">\r\n  {{ name }}\r\n</span>\r\n"
+        },
+        {
+            "name": "LoadingSpinnerComponent",
+            "id": "component-LoadingSpinnerComponent-87646e3e0b77bb88f2ed95a1c78b1b56876072354a4b59a95947194859bc52044d1abe3d30b75bb063d39e64c4a3b386c488745ad2424f51f0603f821834f0ca",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "lib-loading-spinner",
+            "styleUrls": [
+                "./loadingSpinner.component.css"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./loadingSpinner.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "color",
+                    "defaultValue": "'#3b82f6'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 16,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "mode",
+                    "defaultValue": "'indeterminate'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 12,
+                    "type": "\"determinate\" | \"indeterminate\"",
+                    "decorators": []
+                },
+                {
+                    "name": "size",
+                    "defaultValue": "40",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 14,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "thickness",
+                    "defaultValue": "4",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 15,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "defaultValue": "0",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 13,
+                    "type": "number",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'lib-loading-spinner',\r\n  standalone: true,\r\n  imports: [CommonModule],\r\n  templateUrl: './loadingSpinner.component.html',\r\n  styleUrls: ['./loadingSpinner.component.css'],\r\n})\r\nexport class LoadingSpinnerComponent {\r\n  @Input() mode: 'determinate' | 'indeterminate' = 'indeterminate'; // Loading state\r\n  @Input() value = 0; // Progress value (0-100) for determinate mode\r\n  @Input() size = 40; // Diameter in pixels\r\n  @Input() thickness = 4; // Stroke width in pixels\r\n  @Input() color = '#3b82f6'; // Default Tailwind blue-500\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\r\n  display: inline-block;\r\n}\r\n\r\nsvg {\r\n  display: block;\r\n}\r\n",
+                    "styleUrl": "./loadingSpinner.component.css"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<div\r\n  class=\"relative inline-block\"\r\n  [style.width.px]=\"size\"\r\n  [style.height.px]=\"size\"\r\n  role=\"progressbar\"\r\n  [attr.aria-valuenow]=\"mode === 'determinate' ? value : null\"\r\n  [attr.aria-valuemin]=\"0\"\r\n  [attr.aria-valuemax]=\"100\"\r\n  [attr.aria-label]=\"mode === 'determinate' ? 'Loading progress' : 'Loading'\"\r\n>\r\n  <!-- Indeterminate Spinner -->\r\n  <svg\r\n    *ngIf=\"mode === 'indeterminate'\"\r\n    class=\"animate-spin\"\r\n    [style.width.px]=\"size\"\r\n    [style.height.px]=\"size\"\r\n    viewBox=\"0 0 100 100\"\r\n    xmlns=\"http://www.w3.org/2000/svg\"\r\n  >\r\n    <circle\r\n      class=\"opacity-25\"\r\n      cx=\"50\"\r\n      cy=\"50\"\r\n      r=\"40\"\r\n      [style.stroke]=\"color\"\r\n      [style.stroke-width]=\"thickness\"\r\n      fill=\"none\"\r\n    />\r\n    <circle\r\n      cx=\"50\"\r\n      cy=\"50\"\r\n      r=\"40\"\r\n      [style.stroke]=\"color\"\r\n      [style.stroke-width]=\"thickness\"\r\n      fill=\"none\"\r\n      stroke-linecap=\"round\"\r\n      stroke-dasharray=\"251.2\"\r\n      stroke-dashoffset=\"62.8\"\r\n    />\r\n  </svg>\r\n\r\n  <!-- Determinate Spinner -->\r\n  <svg\r\n    *ngIf=\"mode === 'determinate'\"\r\n    [style.width.px]=\"size\"\r\n    [style.height.px]=\"size\"\r\n    viewBox=\"0 0 100 100\"\r\n    xmlns=\"http://www.w3.org/2000/svg\"\r\n  >\r\n    <circle\r\n      class=\"opacity-25\"\r\n      cx=\"50\"\r\n      cy=\"50\"\r\n      r=\"40\"\r\n      [style.stroke]=\"color\"\r\n      [style.stroke-width]=\"thickness\"\r\n      fill=\"none\"\r\n    />\r\n    <circle\r\n      class=\"transition-all duration-300 ease-in-out\"\r\n      cx=\"50\"\r\n      cy=\"50\"\r\n      r=\"40\"\r\n      [style.stroke]=\"color\"\r\n      [style.stroke-width]=\"thickness\"\r\n      fill=\"none\"\r\n      stroke-linecap=\"round\"\r\n      [style.stroke-dasharray]=\"251.2\"\r\n      [style.stroke-dashoffset]=\"251.2 - 251.2 * (value / 100)\"\r\n    />\r\n  </svg>\r\n</div>\r\n"
+        },
+        {
+            "name": "PaginatorComponent",
+            "id": "component-PaginatorComponent-90b8fefde7adb6bec711d3f364730b24718220abba32876ee3d21559d81f12801224e20268295ba5dbd3ab79e2ad599801201dd2d9d9868c944d2902a33c202a",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "lib-paginator",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./paginator.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "length",
+                    "defaultValue": "100",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 10,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "pageIndex",
+                    "defaultValue": "0",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 12,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "pageSize",
+                    "defaultValue": "10",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 11,
+                    "type": "number",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "pageChange",
+                    "defaultValue": "new EventEmitter<number>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 13,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "pageSizeChange",
+                    "defaultValue": "new EventEmitter<number>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 14,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "pageSizeOptions",
+                    "defaultValue": "[10, 20, 50, 100]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 16
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "changePage",
+                    "args": [
+                        {
+                            "name": "newIndex",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 42,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "newIndex",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "changePageSize",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 49,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [
+                {
+                    "name": "class",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 18,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'lib-paginator',\r\n  imports: [CommonModule],\r\n  templateUrl: './paginator.component.html',\r\n})\r\nexport class PaginatorComponent {\r\n  @Input() length = 100; // Total items\r\n  @Input() pageSize = 10; // Items per page\r\n  @Input() pageIndex = 0; // Current page\r\n  @Output() pageChange = new EventEmitter<number>();\r\n  @Output() pageSizeChange = new EventEmitter<number>();\r\n\r\n  pageSizeOptions = [10, 20, 50, 100];\r\n\r\n  @HostBinding('class') get hostClasses() {\r\n    return 'flex justify-between items-center p-4 bg-gray-100 rounded-lg shadow-sm w-full';\r\n  }\r\n\r\n  get totalPages(): number {\r\n    return Math.ceil(this.length / this.pageSize);\r\n  }\r\n\r\n  get isFirstPage(): boolean {\r\n    return this.pageIndex === 0;\r\n  }\r\n\r\n  get isLastPage(): boolean {\r\n    return this.pageIndex === this.totalPages - 1;\r\n  }\r\n\r\n  get startItem(): number {\r\n    return this.pageIndex * this.pageSize + 1;\r\n  }\r\n\r\n  get endItem(): number {\r\n    return Math.min((this.pageIndex + 1) * this.pageSize, this.length);\r\n  }\r\n\r\n  changePage(newIndex: number) {\r\n    if (newIndex >= 0 && newIndex < this.totalPages) {\r\n      this.pageIndex = newIndex;\r\n      this.pageChange.emit(this.pageIndex);\r\n    }\r\n  }\r\n\r\n  changePageSize(event: Event) {\r\n    const newSize = Number((event.target as HTMLSelectElement).value);\r\n    this.pageSize = newSize;\r\n    this.pageIndex = 0; // Reset to first page\r\n    this.pageSizeChange.emit(this.pageSize);\r\n    this.pageChange.emit(this.pageIndex);\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "hostClasses": {
+                    "name": "hostClasses",
+                    "getSignature": {
+                        "name": "hostClasses",
+                        "type": "",
+                        "returnType": "",
+                        "line": 18
+                    }
+                },
+                "totalPages": {
+                    "name": "totalPages",
+                    "getSignature": {
+                        "name": "totalPages",
+                        "type": "number",
+                        "returnType": "number",
+                        "line": 22
+                    }
+                },
+                "isFirstPage": {
+                    "name": "isFirstPage",
+                    "getSignature": {
+                        "name": "isFirstPage",
+                        "type": "boolean",
+                        "returnType": "boolean",
+                        "line": 26
+                    }
+                },
+                "isLastPage": {
+                    "name": "isLastPage",
+                    "getSignature": {
+                        "name": "isLastPage",
+                        "type": "boolean",
+                        "returnType": "boolean",
+                        "line": 30
+                    }
+                },
+                "startItem": {
+                    "name": "startItem",
+                    "getSignature": {
+                        "name": "startItem",
+                        "type": "number",
+                        "returnType": "number",
+                        "line": 34
+                    }
+                },
+                "endItem": {
+                    "name": "endItem",
+                    "getSignature": {
+                        "name": "endItem",
+                        "type": "number",
+                        "returnType": "number",
+                        "line": 38
+                    }
+                }
+            },
+            "templateData": "<!-- Page Size Selector -->\r\n<div class=\"flex items-center space-x-2\">\r\n  <label for=\"pageSizeSelect\" class=\"text-gray-600 text-sm\">Items per page:</label>\r\n  <select \r\n    id=\"pageSizeSelect\"\r\n    [value]=\"pageSize\"\r\n    (change)=\"changePageSize($event)\"\r\n    class=\"border border-gray-300 rounded-md px-2 py-2 bg-white text-gray-700\">\r\n    <option *ngFor=\"let size of pageSizeOptions\" [value]=\"size\">{{ size }}</option>\r\n  </select>\r\n</div>\r\n\r\n<!-- Page Information -->\r\n<span class=\"text-gray-500 text-sm\">\r\n  {{ startItem }} – {{ endItem }} of {{ length }}\r\n</span>\r\n\r\n<!-- Navigation Controls -->\r\n<button \r\n  [disabled]=\"isFirstPage\"\r\n  (click)=\"changePage(pageIndex - 1)\"\r\n  class=\"p-2 text-gray-500 hover:text-black disabled:opacity-50\">\r\n  ❮\r\n</button>\r\n\r\n<button \r\n  [disabled]=\"isLastPage\"\r\n  (click)=\"changePage(pageIndex + 1)\"\r\n  class=\"p-2 text-gray-500 hover:text-black disabled:opacity-50\">\r\n  ❯\r\n</button>\r\n"
+        },
+        {
+            "name": "ProgressBarComponent",
+            "id": "component-ProgressBarComponent-78a23a78d7e5b67e6bd83b89d04b177eb6698f57f51981bfe0118b9dd1fcdddb67a4e78ce9130775a7bf75367f5e52b60e2377e467afc22057006c6abaec4b6b",
+            "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "lib-progress-bar",
+            "styleUrls": [
+                "./progress-bar.component.css"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./progress-bar.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "bufferProgress",
+                    "defaultValue": "100",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nBuffer progress (for buffer variant, 0-100)",
+                    "description": "<p>Buffer progress (for buffer variant, 0-100)</p>\n",
+                    "line": 18,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "class",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "color",
+                    "defaultValue": "'primary'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nColor options",
+                    "description": "<p>Color options</p>\n",
+                    "line": 21,
+                    "type": "\"primary\" | \"secondary\" | \"success\" | \"error\"",
+                    "decorators": []
+                },
+                {
+                    "name": "progress",
+                    "defaultValue": "80",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nPrimary progress percentage (0-100)",
+                    "description": "<p>Primary progress percentage (0-100)</p>\n",
+                    "line": 15,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "variant",
+                    "defaultValue": "'determinate'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nTypes: 'determinate' | 'indeterminate' | 'buffer' | 'query'",
+                    "description": "<p>Types: &#39;determinate&#39; | &#39;indeterminate&#39; | &#39;buffer&#39; | &#39;query&#39;</p>\n",
+                    "line": 12,
+                    "type": "\"determinate\" | \"indeterminate\" | \"buffer\" | \"query\"",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "colorMap",
+                    "defaultValue": "{\r\n    primary: 'bg-blue-500', // Default\r\n    secondary: 'bg-yellow-500',\r\n    success: 'bg-green-500',\r\n    error: 'bg-red-500', // Warning\r\n  }",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 27,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                }
+            ],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [
+                {
+                    "name": "class",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nMap color variants to Tailwind CSS classes",
+                    "description": "<p>Map color variants to Tailwind CSS classes</p>\n",
+                    "line": 36,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { CommonModule } from '@angular/common';\r\nimport { Component, HostBinding, Input } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'lib-progress-bar',\r\n  templateUrl: './progress-bar.component.html',\r\n  styleUrls: ['./progress-bar.component.css'],\r\n  imports: [CommonModule],\r\n})\r\nexport class ProgressBarComponent {\r\n  /** Types: 'determinate' | 'indeterminate' | 'buffer' | 'query' */\r\n  @Input() variant: 'determinate' | 'indeterminate' | 'buffer' | 'query' = 'determinate';\r\n\r\n  /** Primary progress percentage (0-100) */\r\n  @Input() progress = 80;\r\n\r\n  /** Buffer progress (for buffer variant, 0-100) */\r\n  @Input() bufferProgress = 100;\r\n\r\n  /** Color options */\r\n  @Input() color: 'primary' | 'secondary' | 'success' | 'error' = 'primary';\r\n\r\n  @Input() class = ''; // Allow users to pass custom Tailwind classes\r\n\r\n  \r\n\r\n  private readonly colorMap = {\r\n    primary: 'bg-blue-500', // Default\r\n    secondary: 'bg-yellow-500',\r\n    success: 'bg-green-500',\r\n    error: 'bg-red-500', // Warning\r\n  };\r\n\r\n  /** Map color variants to Tailwind CSS classes */\r\n  @HostBinding('class')\r\n  get progressBarClass(): string {\r\n    return this.colorMap[this.color] || 'bg-blue-500';\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": "@keyframes indeterminate {\r\n    0% {\r\n      left: -100%;\r\n    }\r\n    100% {\r\n      left: 100%;\r\n    }\r\n  }\r\n  \r\n  @keyframes query {\r\n    0% {\r\n      right: -100%;\r\n    }\r\n    100% {\r\n      right: 100%;\r\n    }\r\n  }\r\n\r\n  @keyframes bufferWave {\r\n    0% {\r\n      left: -100%;\r\n      width: 40%;\r\n    }\r\n    50% {\r\n      left: 50%;\r\n      width: 60%;\r\n    }\r\n    100% {\r\n      left: 100%;\r\n      width: 40%;\r\n    }\r\n  }\r\n  \r\n  .animate-indeterminate {\r\n    position: absolute;\r\n    left: -100%;\r\n    width: 40%;\r\n    animation: indeterminate 1.5s infinite linear;\r\n  }\r\n  \r\n  .animate-query {\r\n    position: absolute;\r\n    right: -100%;\r\n    width: 40%;\r\n    animation: query 1.5s infinite linear;\r\n  }\r\n\r\n  .buffer-wave {\r\n    position: absolute;\r\n    left: -100%;\r\n    height: 100%;\r\n    width: 40%;\r\n    background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.3));\r\n    animation: bufferWave 2s infinite ease-in-out;\r\n  }\r\n\r\n  \r\n  ",
+                    "styleUrl": "./progress-bar.component.css"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "progressBarClass": {
+                    "name": "progressBarClass",
+                    "getSignature": {
+                        "name": "progressBarClass",
+                        "type": "string",
+                        "returnType": "string",
+                        "line": 36,
+                        "rawdescription": "\nMap color variants to Tailwind CSS classes",
+                        "description": "<p>Map color variants to Tailwind CSS classes</p>\n"
+                    }
+                }
+            },
+            "templateData": "<div class=\"w-full bg-gray-200 rounded-full h-4 overflow-hidden relative\">\r\n\r\n  <!-- Determinate & Buffer Primary Progress -->\r\n  <div\r\n    *ngIf=\"variant === 'determinate' || variant === 'buffer'\"\r\n    class=\"h-full transition-all duration-300\"\r\n    [ngClass]=\"progressBarClass\"\r\n    [style.width.%]=\"progress\"\r\n    role=\"progressbar\"\r\n    [attr.aria-valuenow]=\"progress\"\r\n    aria-valuemin=\"0\"\r\n    aria-valuemax=\"100\"\r\n  ></div>\r\n\r\n  <!-- Indeterminate Animation -->\r\n  <div\r\n    *ngIf=\"variant === 'indeterminate'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-indeterminate\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Query Mode (Reversed Indeterminate) -->\r\n  <div\r\n    *ngIf=\"variant === 'query'\"\r\n    class=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n  >\r\n    <div\r\n      class=\"h-full w-1/3 animate-query\"\r\n      [ngClass]=\"progressBarClass\"\r\n    ></div>\r\n  </div>\r\n\r\n  <!-- Buffer Secondary Progress -->\r\n  <!-- Buffer Secondary Progress Background -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full bg-gray-300 opacity-50\"\r\n[style.width.%]=\"bufferProgress\"\r\n></div>\r\n\r\n<!-- Buffer Animation Overlay -->\r\n<div\r\n*ngIf=\"variant === 'buffer'\"\r\nclass=\"absolute top-0 left-0 h-full w-full overflow-hidden\"\r\n>\r\n<div class=\"buffer-wave\"></div>\r\n</div>\r\n\r\n\r\n</div>\r\n"
         }
     ],
     "modules": [],
@@ -298,7 +1598,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'accent',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Colored",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\n}"
             },
             {
                 "name": "config",
@@ -308,7 +1618,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "StorybookConfig",
-                "defaultValue": "{\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  docs: {\n    autodocs: true,\n    defaultName: 'Docs',\n  },\n}"
+                "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
             },
             {
                 "name": "CustomStyled",
@@ -318,7 +1628,37 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'primary',\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "CustomStyled",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 60,\r\n    color: 'primary',\r\n    variant: 'determinate',\r\n    class: 'h-6 rounded-lg',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\" [class]=\"class\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    data: sampleData,\r\n    columns: [\r\n      { key: 'no', label: 'No.', sticky: true },\r\n      { key: 'name', label: 'Name', sticky: true },\r\n      { key: 'weight', label: 'Weight' },\r\n      { key: 'symbol', label: 'Symbol' },\r\n    ],\r\n    showFilter: true,\r\n    showPagination: true,\r\n    enableSelection: true,\r\n    expandable: true,\r\n    itemsPerPage: 5,\r\n  },\r\n  play: async ({ canvasElement }) => {\r\n    const canvas = canvasElement as HTMLElement;\r\n    const element = canvas.querySelector('lib-data-table');\r\n    if (element) {\r\n      const component = element as unknown as DataTableComponent;\r\n      component.cdr.detectChanges();\r\n    }\r\n  },\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {},\r\n}"
             },
             {
                 "name": "Default",
@@ -328,7 +1668,57 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    name: 'home',\n    size: 'md',\n    color: 'text-gray-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    name: 'home',\r\n    size: 'md',\r\n    color: 'text-gray-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "StoryObj<PaginatorComponent>",
+                "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 25,\r\n    color: \"primary\",\r\n    variant: 'determinate',\r\n    bufferProgress: 0\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "DefaultNoOnPush",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  decorators: [\r\n    // eslint-disable-next-line @typescript-eslint/no-unused-vars\r\n    (story) => ({\r\n      moduleMetadata: {\r\n        imports: [CommonModule, FormsModule],\r\n        declarations: [\r\n          class {\r\n            constructor() {\r\n              Object.defineProperty(this, 'changeDetection', {\r\n                get: () => ChangeDetectionStrategy.Default,\r\n              });\r\n            }\r\n            template = `<lib-data-table [data]=\"data\" [columns]=\"columns\" [showFilter]=\"showFilter\" [showPagination]=\"showPagination\" [enableSelection]=\"enableSelection\" [expandable]=\"expandable\" [itemsPerPage]=\"itemsPerPage\"></lib-data-table>`;\r\n          },\r\n        ],\r\n      },\r\n      props: {\r\n        data: sampleData,\r\n        columns: [\r\n          { key: 'no', label: 'No.', sticky: true },\r\n          { key: 'name', label: 'Name', sticky: true },\r\n          { key: 'weight', label: 'Weight' },\r\n          { key: 'symbol', label: 'Symbol' },\r\n        ],\r\n        showFilter: true,\r\n        showPagination: true,\r\n        enableSelection: true,\r\n        expandable: true,\r\n        itemsPerPage: 5,\r\n      },\r\n    }),\r\n  ],\r\n}"
+            },
+            {
+                "name": "Determinate",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
+            },
+            {
+                "name": "DeterminateProgress",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\n}"
             },
             {
                 "name": "Disabled",
@@ -338,7 +1728,37 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'primary',\n    disabled: true,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: true,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "GreenBuffer",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 40,\r\n    bufferProgress: 5,\r\n    color: 'success',\r\n    variant: 'buffer',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [buffer]=\"buffer\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "GreenProgress",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    progress: 70,\r\n    color: 'success',\r\n    variant: 'determinate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Large",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\n}"
             },
             {
                 "name": "LargeRedIcon",
@@ -348,7 +1768,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    name: 'favorite',\n    size: 'xl',\n    color: 'text-red-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    name: 'favorite',\r\n    size: 'xl',\r\n    color: 'text-red-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
             },
             {
                 "name": "link",
@@ -368,7 +1788,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<ButtonComponent>",
-                "defaultValue": "{\n  title: 'Components/Button',\n  component: ButtonComponent,\n  tags: ['autodocs'],\n  argTypes: {\n    variant: {\n      control: 'select',\n      options: ['primary', 'accent', 'outline', 'text'],\n      description: 'Button style variant',\n    },\n    disabled: {\n      control: 'boolean',\n      description: 'Disables the button',\n    },\n    class: {\n      control: 'text',\n      description: 'Additional Tailwind CSS classes for customization',\n    },\n  },\n}"
+                "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LoadingSpinnerComponent>",
+                "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
             },
             {
                 "name": "meta",
@@ -378,7 +1808,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<IconComponent>",
-                "defaultValue": "{\n  title: 'Components/Icon',\n  component: IconComponent,\n  tags: ['autodocs'],\n  argTypes: {\n    name: { control: 'text', description: 'Icon name from Material Icons' },\n    size: { \n      control: 'radio', \n      options: ['sm', 'md', 'lg', 'xl'], \n      description: 'Size of the icon' \n    },\n    color: { control: 'text', description: 'Tailwind color classes' },\n  },\n}"
+                "defaultValue": "{\r\n  title: 'Components/Icon',\r\n  component: IconComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\n    size: { \r\n      control: 'radio', \r\n      options: ['sm', 'md', 'lg', 'xl'], \r\n      description: 'Size of the icon' \r\n    },\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ProgressBarComponent>",
+                "defaultValue": "{\r\n  title: 'Components/Progress Bar',\r\n  component: ProgressBarComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    progress: {\r\n      control: { type: 'range', min: 0, max: 100, step: 1 },\r\n      description: 'Progress percentage (0 to 100)',\r\n    },\r\n    // buffer: {\r\n    //   control: { type: 'range', min: 0, max: 100, step: 1 },\r\n    //   description: 'Buffer progress percentage (used in buffer variant)',\r\n    // },\r\n    color: {\r\n      control: 'select',\r\n      options: ['primary', 'secondary', 'success', 'error'],\r\n      description: 'Color of the progress bar',\r\n    },\r\n    variant: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate', 'buffer', 'query'],\r\n      description: 'Progress bar type',\r\n    },\r\n    // class: {\r\n    //   control: 'text',\r\n    //   description: 'Additional Tailwind CSS classes for customization',\r\n    // },\r\n  },\r\n}"
             },
             {
                 "name": "Outline",
@@ -388,7 +1828,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'outline',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'outline',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\n  }),\r\n}"
             },
             {
                 "name": "parameters",
@@ -398,7 +1838,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "object",
-                "defaultValue": "{\n  actions: { argTypesRegex: '^on[A-Z].*' },\n  controls: {\n    matchers: {\n      color: /(background|color)$/i,\n      date: /Date$/,\n    },\n  },\n}"
+                "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
             },
             {
                 "name": "Primary",
@@ -408,7 +1848,27 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'primary',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "RedIndeterminate",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "sampleData",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "PeriodicElement[]",
+                "defaultValue": "[\r\n  { no: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },\r\n  { no: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },\r\n  { no: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },\r\n  { no: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },\r\n  { no: 5, name: 'Boron', weight: 10.811, symbol: 'B' },\r\n]"
             },
             {
                 "name": "SmallBlueIcon",
@@ -418,7 +1878,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    name: 'star',\n    size: 'sm',\n    color: 'text-blue-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    name: 'star',\r\n    size: 'sm',\r\n    color: 'text-blue-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
             },
             {
                 "name": "Text",
@@ -428,11 +1888,32 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    variant: 'text',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\n  }),\n}"
+                "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Thick",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\n}"
             }
         ],
         "functions": [],
         "typealiases": [
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<DataTableComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
             {
                 "name": "Story",
                 "ctype": "miscellaneous",
@@ -448,8 +1929,30 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
+                "rawtype": "StoryObj<LoadingSpinnerComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
                 "rawtype": "StoryObj<IconComponent>",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<ProgressBarComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -467,7 +1970,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'accent',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "CustomStyled",
@@ -477,7 +1980,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'primary',\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "Disabled",
@@ -487,7 +1990,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'primary',\n    disabled: true,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: true,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "meta",
@@ -497,7 +2000,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Meta<ButtonComponent>",
-                    "defaultValue": "{\n  title: 'Components/Button',\n  component: ButtonComponent,\n  tags: ['autodocs'],\n  argTypes: {\n    variant: {\n      control: 'select',\n      options: ['primary', 'accent', 'outline', 'text'],\n      description: 'Button style variant',\n    },\n    disabled: {\n      control: 'boolean',\n      description: 'Disables the button',\n    },\n    class: {\n      control: 'text',\n      description: 'Additional Tailwind CSS classes for customization',\n    },\n  },\n}"
+                    "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
                 },
                 {
                     "name": "Outline",
@@ -507,7 +2010,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'outline',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'outline',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "Primary",
@@ -517,7 +2020,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'primary',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "Text",
@@ -527,7 +2030,79 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    variant: 'text',\n    disabled: false,\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
+                {
+                    "name": "Colored",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\n}"
+                },
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {},\r\n}"
+                },
+                {
+                    "name": "Determinate",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
+                },
+                {
+                    "name": "DeterminateProgress",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\n}"
+                },
+                {
+                    "name": "Large",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<LoadingSpinnerComponent>",
+                    "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
+                },
+                {
+                    "name": "Thick",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\n}"
                 }
             ],
             "libs/ngx-tailwind-flex-ui/.storybook/main.ts": [
@@ -539,7 +2114,101 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "StorybookConfig",
-                    "defaultValue": "{\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  docs: {\n    autodocs: true,\n    defaultName: 'Docs',\n  },\n}"
+                    "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
+                {
+                    "name": "CustomStyled",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    progress: 60,\r\n    color: 'primary',\r\n    variant: 'determinate',\r\n    class: 'h-6 rounded-lg',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\" [class]=\"class\"></lib-progress-bar>`,\r\n  }),\r\n}"
+                },
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    progress: 25,\r\n    color: \"primary\",\r\n    variant: 'determinate',\r\n    bufferProgress: 0\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+                },
+                {
+                    "name": "GreenBuffer",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    progress: 40,\r\n    bufferProgress: 5,\r\n    color: 'success',\r\n    variant: 'buffer',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [buffer]=\"buffer\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+                },
+                {
+                    "name": "GreenProgress",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    progress: 70,\r\n    color: 'success',\r\n    variant: 'determinate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ProgressBarComponent>",
+                    "defaultValue": "{\r\n  title: 'Components/Progress Bar',\r\n  component: ProgressBarComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    progress: {\r\n      control: { type: 'range', min: 0, max: 100, step: 1 },\r\n      description: 'Progress percentage (0 to 100)',\r\n    },\r\n    // buffer: {\r\n    //   control: { type: 'range', min: 0, max: 100, step: 1 },\r\n    //   description: 'Buffer progress percentage (used in buffer variant)',\r\n    // },\r\n    color: {\r\n      control: 'select',\r\n      options: ['primary', 'secondary', 'success', 'error'],\r\n      description: 'Color of the progress bar',\r\n    },\r\n    variant: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate', 'buffer', 'query'],\r\n      description: 'Progress bar type',\r\n    },\r\n    // class: {\r\n    //   control: 'text',\r\n    //   description: 'Additional Tailwind CSS classes for customization',\r\n    // },\r\n  },\r\n}"
+                },
+                {
+                    "name": "RedIndeterminate",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  args: {\r\n    data: sampleData,\r\n    columns: [\r\n      { key: 'no', label: 'No.', sticky: true },\r\n      { key: 'name', label: 'Name', sticky: true },\r\n      { key: 'weight', label: 'Weight' },\r\n      { key: 'symbol', label: 'Symbol' },\r\n    ],\r\n    showFilter: true,\r\n    showPagination: true,\r\n    enableSelection: true,\r\n    expandable: true,\r\n    itemsPerPage: 5,\r\n  },\r\n  play: async ({ canvasElement }) => {\r\n    const canvas = canvasElement as HTMLElement;\r\n    const element = canvas.querySelector('lib-data-table');\r\n    if (element) {\r\n      const component = element as unknown as DataTableComponent;\r\n      component.cdr.detectChanges();\r\n    }\r\n  },\r\n}"
+                },
+                {
+                    "name": "DefaultNoOnPush",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\r\n  decorators: [\r\n    // eslint-disable-next-line @typescript-eslint/no-unused-vars\r\n    (story) => ({\r\n      moduleMetadata: {\r\n        imports: [CommonModule, FormsModule],\r\n        declarations: [\r\n          class {\r\n            constructor() {\r\n              Object.defineProperty(this, 'changeDetection', {\r\n                get: () => ChangeDetectionStrategy.Default,\r\n              });\r\n            }\r\n            template = `<lib-data-table [data]=\"data\" [columns]=\"columns\" [showFilter]=\"showFilter\" [showPagination]=\"showPagination\" [enableSelection]=\"enableSelection\" [expandable]=\"expandable\" [itemsPerPage]=\"itemsPerPage\"></lib-data-table>`;\r\n          },\r\n        ],\r\n      },\r\n      props: {\r\n        data: sampleData,\r\n        columns: [\r\n          { key: 'no', label: 'No.', sticky: true },\r\n          { key: 'name', label: 'Name', sticky: true },\r\n          { key: 'weight', label: 'Weight' },\r\n          { key: 'symbol', label: 'Symbol' },\r\n        ],\r\n        showFilter: true,\r\n        showPagination: true,\r\n        enableSelection: true,\r\n        expandable: true,\r\n        itemsPerPage: 5,\r\n      },\r\n    }),\r\n  ],\r\n}"
+                },
+                {
+                    "name": "sampleData",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "PeriodicElement[]",
+                    "defaultValue": "[\r\n  { no: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },\r\n  { no: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },\r\n  { no: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },\r\n  { no: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },\r\n  { no: 5, name: 'Boron', weight: 10.811, symbol: 'B' },\r\n]"
                 }
             ],
             "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts": [
@@ -551,7 +2220,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    name: 'home',\n    size: 'md',\n    color: 'text-gray-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    name: 'home',\r\n    size: 'md',\r\n    color: 'text-gray-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "LargeRedIcon",
@@ -561,7 +2230,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    name: 'favorite',\n    size: 'xl',\n    color: 'text-red-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    name: 'favorite',\r\n    size: 'xl',\r\n    color: 'text-red-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
                 },
                 {
                     "name": "meta",
@@ -571,7 +2240,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Meta<IconComponent>",
-                    "defaultValue": "{\n  title: 'Components/Icon',\n  component: IconComponent,\n  tags: ['autodocs'],\n  argTypes: {\n    name: { control: 'text', description: 'Icon name from Material Icons' },\n    size: { \n      control: 'radio', \n      options: ['sm', 'md', 'lg', 'xl'], \n      description: 'Size of the icon' \n    },\n    color: { control: 'text', description: 'Tailwind color classes' },\n  },\n}"
+                    "defaultValue": "{\r\n  title: 'Components/Icon',\r\n  component: IconComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\n    size: { \r\n      control: 'radio', \r\n      options: ['sm', 'md', 'lg', 'xl'], \r\n      description: 'Size of the icon' \r\n    },\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\n  },\r\n}"
                 },
                 {
                     "name": "SmallBlueIcon",
@@ -581,7 +2250,19 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    name: 'star',\n    size: 'sm',\n    color: 'text-blue-500',\n  },\n  render: (args) => ({\n    props: args,\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\n  }),\n}"
+                    "defaultValue": "{\r\n  args: {\r\n    name: 'star',\r\n    size: 'sm',\r\n    color: 'text-blue-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "StoryObj<PaginatorComponent>",
+                    "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
                 }
             ],
             "libs/ngx-tailwind-flex-ui/.storybook/preview.ts": [
@@ -603,13 +2284,26 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "object",
-                    "defaultValue": "{\n  actions: { argTypesRegex: '^on[A-Z].*' },\n  controls: {\n    matchers: {\n      color: /(background|color)$/i,\n      date: /Date$/,\n    },\n  },\n}"
+                    "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
                 }
             ]
         },
         "groupedFunctions": {},
         "groupedEnumerations": {},
         "groupedTypeAliases": {
+            "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<DataTableComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
             "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts": [
                 {
                     "name": "Story",
@@ -617,6 +2311,19 @@
                     "subtype": "typealias",
                     "rawtype": "StoryObj<ButtonComponent>",
                     "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<LoadingSpinnerComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -635,12 +2342,25 @@
                     "description": "",
                     "kind": 183
                 }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<ProgressBarComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
             ]
         }
     },
     "routes": [],
     "coverage": {
-        "count": 0,
+        "count": 1,
         "status": "low",
         "files": [
             {
@@ -763,6 +2483,73 @@
                 "status": "low"
             },
             {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DefaultNoOnPush",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "sampleData",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.stories.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "DataTableComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/43",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "Column",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/data-table/data-table.component.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "PeriodicElement",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
                 "filePath": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -820,6 +2607,193 @@
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Colored",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Determinate",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DeterminateProgress",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Large",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Thick",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "LoadingSpinnerComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "PaginatorComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/10",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "CustomStyled",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "GreenBuffer",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "GreenProgress",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "RedIndeterminate",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ProgressBarComponent",
+                "coveragePercent": 62,
+                "coverageCount": "5/8",
+                "status": "good"
             }
         ]
     }

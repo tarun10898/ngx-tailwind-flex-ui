@@ -1,0 +1,215 @@
+<div class="w-full overflow-hidden">
+  <!-- Controls Section -->
+  <div class="mb-4 flex flex-wrap gap-2">
+    <!-- Column Management -->
+    <div class="flex space-x-2">
+      <button
+        class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+        (click)="shuffleColumns()"
+      >
+        Shuffle Columns
+      </button>
+      <button
+        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+        (click)="addColumn('position', 'Position')"
+      >
+        Add Column
+      </button>
+      <button
+        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+        (click)="removeColumn('weight')"
+      >
+        Remove Weight
+      </button>
+    </div>
+
+    <!-- Data Management -->
+    <div class="flex space-x-2">
+      <button
+        class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600"
+        (click)="
+          addData({
+            no: _data.length + 1,
+            name: 'New Element',
+            weight: 0,
+            symbol: 'Ne'
+          })
+        "
+      >
+        Add Data
+      </button>
+      <button
+        class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
+        (click)="removeData(_data[0])"
+        [disabled]="_data.length === 0"
+      >
+        Remove Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div *ngIf="showFilter" class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="filterText"
+      (input)="filter()"
+      placeholder="Filter table..."
+      class="w-full p-2 border border-gray-300 rounded"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table
+      class="min-w-full bg-white border border-gray-200"
+      *ngIf="displayData.length > 0 || columns.length > 0"
+    >
+      <!-- Header -->
+      <thead>
+        <tr class="bg-gray-100">
+          <!-- Selection Column -->
+          <th *ngIf="enableSelection" class="p-2 border-b border-r">
+            <input
+              type="checkbox"
+              (change)="toggleAllSelection($event)"
+              [checked]="
+                selectedRows.size === filteredData.length &&
+                filteredData.length > 0
+              "
+            />
+          </th>
+
+          <!-- Expansion Column -->
+          <th *ngIf="expandable" class="p-2 border-b border-r w-10"></th>
+
+          <!-- Data Columns -->
+          <th
+            *ngFor="let column of columns"
+            class="p-2 border-b border-r cursor-pointer"
+            [class.sticky]="column.sticky"
+            [class.left-0]="column.key === 'no'"
+            [class.left-16]="column.key === 'name'"
+            [style.background-color]="column.sticky ? '#f9fafb' : ''"
+            [style.z-index]="column.sticky ? '10' : '1'"
+            (click)="sort(column.key)"
+          >
+            <div class="flex items-center">
+              <span>{{ column.label }}</span>
+              <span *ngIf="sortColumn === column.key" class="ml-1">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <!-- Body -->
+      <tbody>
+        <ng-container *ngFor="let element of displayData; let i = index">
+          <!-- Main Row -->
+          <tr class="hover:bg-gray-50">
+            <!-- Selection Column -->
+            <td *ngIf="enableSelection" class="p-2 border-b border-r">
+              <input
+                type="checkbox"
+                [checked]="isSelected(element)"
+                (change)="toggleRowSelection(i)"
+              />
+            </td>
+
+            <!-- Expansion Column -->
+            <td *ngIf="expandable" class="p-2 border-b border-r text-center">
+              <button
+                class="focus:outline-none"
+                (click)="toggleRowExpansion(i)"
+              >
+                {{ isExpanded(element) ? '▼' : '▶' }}
+              </button>
+            </td>
+
+            <!-- Data Columns -->
+            <td
+              *ngFor="let column of columns"
+              class="p-2 border-b border-r"
+              [class.sticky]="column.sticky"
+              [class.left-0]="column.key === 'no'"
+              [class.left-16]="column.key === 'name'"
+              [style.background-color]="column.sticky ? '#ffffff' : ''"
+              [style.z-index]="column.sticky ? '10' : '1'"
+            >
+              {{ element[column.key] !== undefined ? element[column.key] : '' }}
+            </td>
+          </tr>
+
+          <!-- Expanded Row -->
+          <tr *ngIf="expandable && isExpanded(element)" class="bg-gray-100">
+            <td
+              [attr.colspan]="
+                columns.length +
+                (enableSelection ? 1 : 0) +
+                (expandable ? 1 : 0)
+              "
+              class="p-4 border-b"
+            >
+              <div class="p-2 bg-gray-50 rounded">
+                <h3 class="font-semibold">
+                  Secondary row for the element {{ element.name }}
+                </h3>
+                <p>Symbol: {{ element.symbol }}</p>
+                <p>Weight: {{ element.weight }} g/mol</p>
+                <p>Atomic Number: {{ element.no }}</p>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- Empty State -->
+        <tr *ngIf="displayData.length === 0">
+          <td
+            [attr.colspan]="
+              columns.length + (enableSelection ? 1 : 0) + (expandable ? 1 : 0)
+            "
+            class="p-4 text-center"
+          >
+            No data available
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      *ngIf="displayData.length === 0 && columns.length === 0"
+      class="text-center p-4"
+    >
+      No columns or data defined
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div
+    *ngIf="showPagination && totalPages > 1"
+    class="mt-4 flex justify-between items-center"
+  >
+    <div>
+      <span class="text-sm text-gray-600">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+    </div>
+    <div class="space-x-2">
+      <button
+        class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)"
+      >
+        Previous
+      </button>
+      <button
+        class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>
