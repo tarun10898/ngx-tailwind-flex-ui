@@ -1,7 +1,41 @@
 {
   "pipes": [],
-
   "interfaces": [
+    {
+      "name": "SelectOption",
+      "id": "interface-SelectOption-6b6bbc027b3f42cb5701d6328cee782c5c057dfc2230275c66c9fae40db718e9f0b35f502da58a365c155e14e6b70b75f03d6593975bc6560243015aef1bd6b2",
+      "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
+      "deprecated": false,
+      "deprecationMessage": "",
+      "type": "interface",
+      "sourceCode": "import {\n  Component,\n  Input,\n  Output,\n  EventEmitter,\n  forwardRef,\n  ViewChild,\n  ElementRef,\n  OnInit,\n  HostListener,\n  ChangeDetectorRef,\n} from '@angular/core';\nimport { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';\nimport { CommonModule } from '@angular/common';\nimport { FormsModule } from '@angular/forms';\n\nexport interface SelectOption {\n  label: string;\n  value: string | number | boolean | null;\n}\n\n@Component({\n  selector: 'lib-select',\n  standalone: true,\n  imports: [CommonModule, FormsModule],\n  templateUrl: './select.component.html',\n  styleUrls: ['./select.component.css'],\n  providers: [\n    {\n      provide: NG_VALUE_ACCESSOR,\n      useExisting: forwardRef(() => SelectComponent),\n      multi: true,\n    },\n  ],\n})\nexport class SelectComponent implements ControlValueAccessor, OnInit {\n  @Input() options: SelectOption[] = [];\n  @Input() placeholder = 'Select an option';\n  @Input() disabled = false;\n  @Input() multiple = false;\n  @Input() required = false;\n\n  @Output() selectionChange = new EventEmitter<\n    string | number | boolean | null | (string | number | boolean | null)[]\n  >();\n  @Output() openedChange = new EventEmitter<boolean>();\n\n  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;\n  @ViewChild('dropdown') dropdown!: ElementRef;\n\n  isOpen = false;\n  searchText = '';\n  filteredOptions: SelectOption[] = [];\n  value:\n    | string\n    | number\n    | boolean\n    | null\n    | (string | number | boolean | null)[] = null;\n  touched = false;\n  focusedOptionIndex = -1;\n\n  constructor(private cdr: ChangeDetectorRef) {}\n\n  ngOnInit() {\n    this.filteredOptions = [...this.options];\n  }\n\n  get displayValue(): string {\n    if (this.value === null || this.value === undefined) {\n      return this.placeholder;\n    }\n\n    if (this.multiple) {\n      if (Array.isArray(this.value) && this.value !== null) {\n        const selectedLabels = this.options\n          .filter((opt) =>\n            (this.value as (string | number | boolean | null)[]).includes(\n              opt.value\n            )\n          )\n          .map((opt) => opt.label);\n        return selectedLabels.length > 0\n          ? selectedLabels.join(', ')\n          : this.placeholder;\n      }\n      return this.placeholder;\n    }\n\n    const selectedOption = this.options.find((opt) => opt.value === this.value);\n    return selectedOption ? selectedOption.label : this.placeholder;\n  }\n\n  // ControlValueAccessor methods\n  onChange: (\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ) => void = () => {\n    // This empty implementation will be replaced by registerOnChange\n    // We intentionally don't use the val parameter here\n  };\n\n  onTouched: () => void = () => {\n    // This empty implementation will be replaced by registerOnTouched\n  };\n\n  writeValue(\n    val: string | number | boolean | null | (string | number | boolean | null)[]\n  ): void {\n    this.value = val;\n    this.onChange(this.value);\n    this.cdr.detectChanges();\n  }\n\n  registerOnChange(\n    fn: (\n      val:\n        | string\n        | number\n        | boolean\n        | null\n        | (string | number | boolean | null)[]\n    ) => void\n  ): void {\n    this.onChange = fn;\n  }\n\n  registerOnTouched(fn: () => void): void {\n    this.onTouched = fn;\n  }\n\n  setDisabledState(isDisabled: boolean): void {\n    this.disabled = isDisabled;\n  }\n\n  toggleDropdown(): void {\n    if (this.disabled) return;\n    this.isOpen = !this.isOpen;\n    this.openedChange.emit(this.isOpen);\n    if (this.isOpen) {\n      setTimeout(() => this.searchInput?.nativeElement.focus(), 0);\n      this.focusedOptionIndex = -1;\n    }\n  }\n\n  selectOption(option: SelectOption): void {\n    if (this.disabled) return;\n    if (this.multiple) {\n      const current = Array.isArray(this.value) ? this.value : [];\n      this.value = current.includes(option.value)\n        ? current.filter((v) => v !== option.value)\n        : [...current, option.value];\n    } else {\n      this.value = option.value;\n      this.isOpen = false;\n      this.openedChange.emit(false);\n    }\n    this.markTouched();\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n  }\n\n  isSelected(option: SelectOption): boolean {\n    if (this.multiple && Array.isArray(this.value)) {\n      return this.value.includes(option.value);\n    }\n    return this.value === option.value;\n  }\n\n  filterOptions(): void {\n    this.filteredOptions = this.options.filter((opt) =>\n      opt.label.toLowerCase().includes(this.searchText.toLowerCase())\n    );\n    this.focusedOptionIndex = -1;\n  }\n\n  clearSelection(event: Event): void {\n    event.stopPropagation();\n    this.value = this.multiple ? [] : null;\n    this.searchText = '';\n    this.filteredOptions = [...this.options];\n    this.onChange(this.value);\n    this.selectionChange.emit(this.value);\n    this.markTouched();\n  }\n\n  markTouched(): void {\n    this.touched = true;\n    this.onTouched();\n  }\n\n  isInvalid(): boolean {\n    return (\n      this.required &&\n      (this.value === null ||\n        (Array.isArray(this.value) && this.value.length === 0)) &&\n      this.touched\n    );\n  }\n\n  @HostListener('document:click', ['$event'])\n  handleClickOutside(event: MouseEvent): void {\n    const target = event.target as HTMLElement;\n    if (this.isOpen && !target.closest('lib-select')) {\n      this.isOpen = false;\n      this.openedChange.emit(this.isOpen);\n    }\n  }\n\n  private scrollToFocusedOption(): void {\n    if (this.focusedOptionIndex >= 0 && this.dropdown?.nativeElement) {\n      const options = this.dropdown.nativeElement.querySelectorAll('li');\n      if (options[this.focusedOptionIndex]) {\n        options[this.focusedOptionIndex].scrollIntoView({\n          behavior: 'smooth',\n          block: 'nearest',\n        });\n      }\n    }\n  }\n\n  @HostListener('keydown', ['$event'])\n  handleKeyboard(event: KeyboardEvent): void {\n    if (!this.isOpen) return;\n\n    switch (event.key) {\n      case 'ArrowDown':\n        event.preventDefault();\n        if (this.focusedOptionIndex < this.filteredOptions.length - 1) {\n          this.focusedOptionIndex++;\n        } else {\n          this.focusedOptionIndex = 0; // Wrap around to start\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'ArrowUp':\n        event.preventDefault();\n        if (this.focusedOptionIndex > 0) {\n          this.focusedOptionIndex--;\n        } else {\n          this.focusedOptionIndex = this.filteredOptions.length - 1; // Wrap around to end\n        }\n        this.scrollToFocusedOption();\n        break;\n\n      case 'Enter':\n        event.preventDefault();\n        if (\n          this.focusedOptionIndex >= 0 &&\n          this.focusedOptionIndex < this.filteredOptions.length\n        ) {\n          this.selectOption(this.filteredOptions[this.focusedOptionIndex]);\n        }\n        break;\n\n      case 'Escape':\n        event.preventDefault();\n        this.isOpen = false;\n        this.openedChange.emit(false);\n        break;\n\n      default:\n        break;\n    }\n  }\n}\n",
+      "properties": [
+        {
+          "name": "label",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "string",
+          "indexKey": "",
+          "optional": false,
+          "description": "",
+          "line": 18
+        },
+        {
+          "name": "value",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "string | number | boolean | null",
+          "indexKey": "",
+          "optional": false,
+          "description": "",
+          "line": 19
+        }
+      ],
+      "indexSignatures": [],
+      "kind": 171,
+      "methods": [],
+      "extends": []
+    },
     {
       "name": "StackedAlertsArgs",
       "id": "interface-StackedAlertsArgs-e4387f63dea172eb1a19f7906012e497d3884d459eab3517eb0429bbd3bb2e0a7bb7f32725bc43dde4de6e49a89bbe3cb3edc1a4c61c69f9e9ccd8b738b3969c",
@@ -3318,6 +3352,120 @@
           "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
         }
       ],
+      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
+        {
+          "name": "Basic",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "object",
+          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Pick a color',\r\n    options: [\r\n      { label: 'Red', value: 'red' },\r\n      { label: 'Green', value: 'green' },\r\n      { label: 'Blue', value: 'blue' },\r\n      { label: 'Yellow', value: 'yellow' },\r\n    ],\r\n  },\r\n}"
+        },
+        {
+          "name": "Template",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<SelectComponent>",
+          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n  }),\r\n}"
+        },
+        {
+          "name": "WithMultiple",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "object",
+          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Select multiple',\r\n    multiple: true,\r\n    options: [\r\n      { label: 'Apple', value: 'apple' },\r\n      { label: 'Banana', value: 'banana' },\r\n      { label: 'Mango', value: 'mango' },\r\n    ],\r\n  },\r\n}"
+        },
+        {
+          "name": "WithValidation",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "object",
+          "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Required field',\r\n    required: true,\r\n    options: [\r\n      { label: 'Item A', value: 'a' },\r\n      { label: 'Item B', value: 'b' },\r\n    ],\r\n  },\r\n}"
+        }
+      ],
+      "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
+        {
+          "name": "Colored",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\n}"
+        },
+        {
+          "name": "Default",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {},\r\n}"
+        },
+        {
+          "name": "Determinate",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
+        },
+        {
+          "name": "DeterminateProgress",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\n}"
+        },
+        {
+          "name": "Large",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\n}"
+        },
+        {
+          "name": "meta",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Meta<LoadingSpinnerComponent>",
+          "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
+        },
+        {
+          "name": "Thick",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\r\n}"
+        }
+      ],
       "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
         {
           "name": "BasicSnackBar",
@@ -3390,78 +3538,7 @@
           "defaultValue": "{\r\n  args: {\r\n    message: 'Custom icon alert',\r\n    type: 'warning',\r\n    icon: 'star',\r\n    dismissible: true,\r\n    duration: 5000,\r\n    position: 'top-center',\r\n  },\r\n}"
         }
       ],
-      "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
-        {
-          "name": "Colored",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\n}"
-        },
-        {
-          "name": "Default",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {},\r\n}"
-        },
-        {
-          "name": "Determinate",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 50,\r\n  },\r\n}"
-        },
-        {
-          "name": "DeterminateProgress",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {\r\n    mode: 'determinate',\r\n    value: 75,\r\n    size: 50,\r\n    thickness: 5,\r\n    color: '#10b981', // Tailwind green-500\r\n  },\r\n}"
-        },
-        {
-          "name": "Large",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\n}"
-        },
-        {
-          "name": "meta",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Meta<LoadingSpinnerComponent>",
-          "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
-        },
-        {
-          "name": "Thick",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "Story",
-          "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\n}"
-        }
-      ],
+
       "libs/ngx-tailwind-flex-ui/.storybook/main.ts": [
         {
           "name": "config",
@@ -3745,6 +3822,7 @@
           "kind": 183
         }
       ],
+
       "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
         {
           "name": "Story",
