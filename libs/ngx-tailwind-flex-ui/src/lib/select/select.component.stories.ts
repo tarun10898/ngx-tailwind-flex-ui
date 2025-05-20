@@ -25,7 +25,10 @@ export default {
     disabled: { control: 'boolean' },
     multiple: { control: 'boolean' },
     options: { control: 'object' },
-    width: { control: 'text', description: 'Width of the select dropdown (e.g. 200px, 100%)' },
+    width: {
+      control: 'text',
+      description: 'Width of the select dropdown (e.g. 200px, 100%)',
+    },
     dropdownLabel: { control: 'text', description: 'Label for the dropdown' },
     selectionChange: { action: 'selectionChange' },
   },
@@ -90,8 +93,9 @@ export const CustomizeDropdown: StoryObj<SelectComponent> = {
   argTypes: {
     options: {
       control: 'object',
-      description: 'Options for the dropdown. You can edit the label and value here.'
-    }
+      description:
+        'Options for the dropdown. You can edit the label and value here.',
+    },
   },
   render: (args) => ({
     props: args,
