@@ -2936,21 +2936,21 @@
                 "name": "Default",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "Story",
-                "defaultValue": "{\r\n  args: {},\r\n}"
-            },
-            {
-                "name": "Default",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
                 "defaultValue": "{\r\n  args: {\r\n    name: 'home',\r\n    size: 'md',\r\n    color: 'text-gray-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\r\n  args: {},\r\n}"
             },
             {
                 "name": "Default",
@@ -3086,16 +3086,6 @@
                 "name": "meta",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "Meta<ButtonComponent>",
-                "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
-            },
-            {
-                "name": "meta",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
@@ -3106,21 +3096,31 @@
                 "name": "meta",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "Meta<LoadingSpinnerComponent>",
-                "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
-            },
-            {
-                "name": "meta",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<IconComponent>",
                 "defaultValue": "{\r\n  title: 'Components/Icon',\r\n  component: IconComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\n    size: { \r\n      control: 'radio', \r\n      options: ['sm', 'md', 'lg', 'xl'], \r\n      description: 'Size of the icon' \r\n    },\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ButtonComponent>",
+                "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LoadingSpinnerComponent>",
+                "defaultValue": "{\r\n  title: 'Components/LoadingSpinnerComponent',\r\n  component: LoadingSpinnerComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    mode: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate'],\r\n      description: 'Loading state',\r\n    },\r\n    value: {\r\n      control: 'number',\r\n      description: 'Progress value (0-100) for determinate mode',\r\n    },\r\n    size: { control: 'number', description: 'Diameter in pixels' },\r\n    thickness: { control: 'number', description: 'Stroke width in pixels' },\r\n    color: {\r\n      control: 'color',\r\n      description: 'Spinner color (hex or Tailwind color)',\r\n    },\r\n  },\r\n}"
             },
             {
                 "name": "meta",
@@ -3280,17 +3280,6 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
-                "rawtype": "StoryObj<ButtonComponent>",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "description": "",
-                "kind": 183
-            },
-            {
-                "name": "Story",
-                "ctype": "miscellaneous",
-                "subtype": "typealias",
                 "rawtype": "StoryObj<AlertComponent>",
                 "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
                 "deprecated": false,
@@ -3302,8 +3291,8 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
-                "rawtype": "StoryObj<LoadingSpinnerComponent>",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+                "rawtype": "StoryObj<IconComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -3313,8 +3302,19 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
-                "rawtype": "StoryObj<IconComponent>",
-                "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+                "rawtype": "StoryObj<ButtonComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<LoadingSpinnerComponent>",
+                "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -3781,19 +3781,6 @@
                     "kind": 183
                 }
             ],
-            "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts": [
-                {
-                    "name": "Story",
-                    "ctype": "miscellaneous",
-                    "subtype": "typealias",
-                    "rawtype": "StoryObj<ButtonComponent>",
-                    "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "description": "",
-                    "kind": 183
-                }
-            ],
             "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
                 {
                     "name": "Story",
@@ -3807,19 +3794,6 @@
                     "kind": 183
                 }
             ],
-            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
-                {
-                    "name": "Story",
-                    "ctype": "miscellaneous",
-                    "subtype": "typealias",
-                    "rawtype": "StoryObj<LoadingSpinnerComponent>",
-                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "description": "",
-                    "kind": 183
-                }
-            ],
             "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts": [
                 {
                     "name": "Story",
@@ -3827,6 +3801,32 @@
                     "subtype": "typealias",
                     "rawtype": "StoryObj<IconComponent>",
                     "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<ButtonComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<LoadingSpinnerComponent>",
+                    "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",

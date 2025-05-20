@@ -121,7 +121,6 @@ describe('SelectComponent', () => {
 
   it('should work with ngModel', fakeAsync(() => {
     const option = component.firstOption;
-    console.log('Option:', option);
     if (!option) {
       throw new Error('First option is undefined');
     }
@@ -131,19 +130,16 @@ describe('SelectComponent', () => {
     component.writeValue('1');
     fixture.detectChanges();
     tick();
-    console.log('Value after writeValue:', component.value);
     expect(component.value).toBe('1');
 
     let newValue: string | string[] | null = null;
     component.registerOnChange((val: string | string[] | null) => {
-      console.log('onChange called with:', val);
       newValue = val;
     });
 
     component.selectOption(option);
     tick();
     fixture.detectChanges();
-    console.log('newValue after selectOption:', newValue);
     expect(newValue).toBe('1');
   }));
 
