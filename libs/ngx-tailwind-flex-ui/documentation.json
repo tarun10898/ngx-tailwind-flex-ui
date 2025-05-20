@@ -264,6 +264,169 @@
   "directives": [],
   "components": [
     {
+      "name": "AccordionComponent",
+      "id": "component-AccordionComponent-238b61ffd8e2e9214b121536352af1b60880282ada5a894367f2dbfbc32a86125ee02b7f3da8179493e54b2ff1f5ac4b645c6caa6909d43a13ce95de4d73830f",
+      "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.ts",
+      "encapsulation": [],
+      "entryComponents": [],
+      "inputs": [],
+      "outputs": [],
+      "providers": [],
+      "selector": "lib-accordion",
+      "styleUrls": [],
+      "styles": [],
+      "templateUrl": ["./accordion.component.html"],
+      "viewProviders": [],
+      "hostDirectives": [],
+      "inputsClass": [
+        {
+          "name": "multi",
+          "defaultValue": "false",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "line": 11,
+          "type": "boolean",
+          "decorators": []
+        }
+      ],
+      "outputsClass": [],
+      "propertiesClass": [
+        {
+          "name": "panels",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "QueryList<AccordionPanelComponent>",
+          "indexKey": "",
+          "optional": false,
+          "description": "",
+          "line": 12,
+          "decorators": [
+            {
+              "name": "ContentChildren",
+              "stringifiedArguments": "AccordionPanelComponent"
+            }
+          ],
+          "modifierKind": [170]
+        }
+      ],
+      "methodsClass": [
+        {
+          "name": "ngAfterContentInit",
+          "args": [],
+          "optional": false,
+          "returnType": "void",
+          "typeParameters": [],
+          "line": 13,
+          "deprecated": false,
+          "deprecationMessage": ""
+        }
+      ],
+      "deprecated": false,
+      "deprecationMessage": "",
+      "hostBindings": [],
+      "hostListeners": [],
+      "standalone": true,
+      "imports": [],
+      "description": "",
+      "rawdescription": "\n",
+      "type": "component",
+      "sourceCode": "import { Component, ContentChildren, QueryList, Input, AfterContentInit } from '@angular/core';\r\nimport { AccordionPanelComponent } from './accordion-panel.component';\r\n\r\n@Component({\r\n  selector: 'lib-accordion',\r\n  standalone: true,\r\n  templateUrl: './accordion.component.html',\r\n  styleUrl: './accordion.component.css',\r\n})\r\nexport class AccordionComponent implements AfterContentInit {\r\n  @Input() multi = false;\r\n  @ContentChildren(AccordionPanelComponent) panels!: QueryList<AccordionPanelComponent>;\r\n  ngAfterContentInit() {\r\n    this.panels.forEach(panel => {\r\n      panel.toggleCallback = (clickedPanel) => {\r\n      if (!this.multi) {\r\n        this.panels.forEach(p => {\r\n          if (p !== clickedPanel) p.expanded = false;\r\n        });\r\n      }\r\n    };\r\n  });\r\n}\r\n}\r\n",
+      "styleUrl": "./accordion.component.css",
+      "assetsDirs": [],
+      "styleUrlsData": "",
+      "stylesData": "",
+      "extends": [],
+      "implements": ["AfterContentInit"],
+      "templateData": "<div class=\"space-y-2\">\r\n    <ng-content></ng-content>\r\n</div>"
+    },
+    {
+      "name": "AccordionPanelComponent",
+      "id": "component-AccordionPanelComponent-ae4668710e2cf3ddbea7656e32830b4e2eaa829f329b93b051aeb408c1303fcd6d115881ba72731b8fd26df2316e6b5aee6130a17f6a39f4a537d271427609fb",
+      "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion-panel.component.ts",
+      "encapsulation": [],
+      "entryComponents": [],
+      "inputs": [],
+      "outputs": [],
+      "providers": [],
+      "selector": "lib-accordion-panel",
+      "styleUrls": [],
+      "styles": [],
+      "templateUrl": ["./accordion-panel.component.html"],
+      "viewProviders": [],
+      "hostDirectives": [],
+      "inputsClass": [
+        {
+          "name": "disabled",
+          "defaultValue": "false",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "line": 10,
+          "type": "boolean",
+          "decorators": []
+        },
+        {
+          "name": "header",
+          "defaultValue": "''",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "line": 9,
+          "type": "string",
+          "decorators": []
+        }
+      ],
+      "outputsClass": [],
+      "propertiesClass": [
+        {
+          "name": "expanded",
+          "defaultValue": "false",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "",
+          "indexKey": "",
+          "optional": false,
+          "description": "",
+          "line": 11
+        },
+        {
+          "name": "toggleCallback",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "function",
+          "indexKey": "",
+          "optional": true,
+          "description": "",
+          "line": 12
+        }
+      ],
+      "methodsClass": [
+        {
+          "name": "toggle",
+          "args": [],
+          "optional": false,
+          "returnType": "void",
+          "typeParameters": [],
+          "line": 13,
+          "deprecated": false,
+          "deprecationMessage": ""
+        }
+      ],
+      "deprecated": false,
+      "deprecationMessage": "",
+      "hostBindings": [],
+      "hostListeners": [],
+      "standalone": true,
+      "imports": [],
+      "description": "",
+      "rawdescription": "\n",
+      "type": "component",
+      "sourceCode": "import { Component, Input } from '@angular/core';\r\n\r\n@Component({\r\n    selector: 'lib-accordion-panel',\r\n    standalone: true,\r\n    templateUrl: './accordion-panel.component.html',\r\n})\r\nexport class AccordionPanelComponent {\r\n    @Input()  header = '';\r\n    @Input() disabled = false;\r\n    expanded = false;\r\n    toggleCallback?: (panel: AccordionPanelComponent) => void;\r\n    toggle() {\r\n        if (this,this.disabled) return;\r\n        this.expanded = !this.expanded;\r\n        this.toggleCallback?.(this);\r\n    }\r\n}",
+      "assetsDirs": [],
+      "styleUrlsData": "",
+      "stylesData": "",
+      "extends": [],
+      "templateData": "<div class=\"border rounded overflow-hidden\">\r\n    <button\r\n      class=\"w-full text-left p-4 font-semibold bg-gray-100\"\r\n      (click)=\"toggle()\"\r\n      [disabled]=\"disabled\"\r\n    >\r\n      {{ header }}\r\n    </button>\r\n  \r\n    <div\r\n      class=\"overflow-hidden transition-all duration-300 ease-in-out\"\r\n      [style.maxHeight]=\"expanded ? '200px' : '0'\"\r\n    >\r\n      <div class=\"p-4\">\r\n        <ng-content></ng-content>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  "
+    },
+    {
       "name": "AlertComponent",
       "id": "component-AlertComponent-2a9b209821bc6a9a2f45202259c4c85ef089278fbbd9bb1bbcad0ae0d87d7bbe40d7771efc2b1727088ff7ece7a9aab4f00bc109759f5ef8b15f27bf9e807a00",
       "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.ts",
@@ -1456,7 +1619,7 @@
     },
     {
       "name": "SelectComponent",
-      "id": "component-SelectComponent-35bc698adca78795981cd86ef9cbf70fc92c681738b5691faad74fb79b10c0a4764299784187b8c5e6ff391a94636be1589c0d24f62d721de9ef350163690be0",
+      "id": "component-SelectComponent-81c931b230650cf362c770209786c6dc8a830a88881412bce20e80e07ceba6d28a3f2b4c6e7afbeab6c103177fdbdfcb0e5e369be7249bff330ca3571c883b23",
       "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.ts",
       "encapsulation": [],
       "entryComponents": [],
@@ -1555,6 +1718,15 @@
           "line": 41,
           "type": "number",
           "decorators": []
+        },
+        {
+          "name": "width",
+          "defaultValue": "'100%'",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "line": 45,
+          "type": "string",
+          "decorators": []
         }
       ],
       "outputsClass": [
@@ -1563,7 +1735,7 @@
           "defaultValue": "new EventEmitter<void>()",
           "deprecated": false,
           "deprecationMessage": "",
-          "line": 48,
+          "line": 49,
           "type": "EventEmitter"
         },
         {
@@ -1571,7 +1743,7 @@
           "defaultValue": "new EventEmitter<boolean>()",
           "deprecated": false,
           "deprecationMessage": "",
-          "line": 46,
+          "line": 47,
           "type": "EventEmitter"
         },
         {
@@ -1579,7 +1751,7 @@
           "defaultValue": "new EventEmitter<string | string[] | null>()",
           "deprecated": false,
           "deprecationMessage": "",
-          "line": 47,
+          "line": 48,
           "type": "EventEmitter"
         }
       ],
@@ -1593,7 +1765,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 61,
+          "line": 62,
           "modifierKind": [123]
         },
         {
@@ -1605,7 +1777,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 64,
+          "line": 65,
           "modifierKind": [123]
         },
         {
@@ -1617,7 +1789,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 60,
+          "line": 61,
           "modifierKind": [123]
         },
         {
@@ -1629,7 +1801,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 59
+          "line": 60
         },
         {
           "name": "isOpen",
@@ -1640,7 +1812,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 57
+          "line": 58
         },
         {
           "name": "optionsQueryList",
@@ -1650,7 +1822,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 55,
+          "line": 56,
           "decorators": [
             {
               "name": "ContentChildren",
@@ -1667,7 +1839,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 51,
+          "line": 52,
           "decorators": [
             {
               "name": "ViewChild",
@@ -1684,7 +1856,7 @@
           "indexKey": "",
           "optional": true,
           "description": "",
-          "line": 52,
+          "line": 53,
           "decorators": [
             {
               "name": "ViewChild",
@@ -1702,7 +1874,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 58
+          "line": 59
         },
         {
           "name": "trigger",
@@ -1712,7 +1884,7 @@
           "indexKey": "",
           "optional": false,
           "description": "",
-          "line": 50,
+          "line": 51,
           "decorators": [
             {
               "name": "ViewChild",
@@ -1724,12 +1896,42 @@
       ],
       "methodsClass": [
         {
+          "name": "clearSelection",
+          "args": [
+            {
+              "name": "event",
+              "type": "Event",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "optional": true
+            }
+          ],
+          "optional": false,
+          "returnType": "void",
+          "typeParameters": [],
+          "line": 222,
+          "deprecated": false,
+          "deprecationMessage": "",
+          "jsdoctags": [
+            {
+              "name": "event",
+              "type": "Event",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "optional": true,
+              "tagName": {
+                "text": "param"
+              }
+            }
+          ]
+        },
+        {
           "name": "closePanel",
           "args": [],
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 228,
+          "line": 254,
           "deprecated": false,
           "deprecationMessage": ""
         },
@@ -1739,7 +1941,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 270,
+          "line": 296,
           "deprecated": false,
           "deprecationMessage": "",
           "modifierKind": [123]
@@ -1750,10 +1952,38 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 280,
+          "line": 306,
           "deprecated": false,
           "deprecationMessage": "",
           "modifierKind": [123]
+        },
+        {
+          "name": "getLabelForValue",
+          "args": [
+            {
+              "name": "val",
+              "type": "string",
+              "deprecated": false,
+              "deprecationMessage": ""
+            }
+          ],
+          "optional": false,
+          "returnType": "string",
+          "typeParameters": [],
+          "line": 242,
+          "deprecated": false,
+          "deprecationMessage": "",
+          "jsdoctags": [
+            {
+              "name": "val",
+              "type": "string",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "tagName": {
+                "text": "param"
+              }
+            }
+          ]
         },
         {
           "name": "getOptionsArray",
@@ -1761,7 +1991,7 @@
           "optional": false,
           "returnType": "SelectOptionComponent[]",
           "typeParameters": [],
-          "line": 217,
+          "line": 218,
           "deprecated": false,
           "deprecationMessage": "",
           "modifierKind": [123]
@@ -1779,7 +2009,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 236,
+          "line": 262,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -1807,7 +2037,7 @@
           "optional": false,
           "returnType": "boolean",
           "typeParameters": [],
-          "line": 167,
+          "line": 168,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -1828,7 +2058,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 70,
+          "line": 71,
           "deprecated": false,
           "deprecationMessage": ""
         },
@@ -1845,7 +2075,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 222,
+          "line": 248,
           "deprecated": false,
           "deprecationMessage": "",
           "decorators": [
@@ -1888,7 +2118,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 116,
+          "line": 117,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -1925,7 +2155,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 120,
+          "line": 121,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -1942,12 +2172,57 @@
           ]
         },
         {
+          "name": "removeSelected",
+          "args": [
+            {
+              "name": "val",
+              "type": "string",
+              "deprecated": false,
+              "deprecationMessage": ""
+            },
+            {
+              "name": "event",
+              "type": "Event",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "optional": true
+            }
+          ],
+          "optional": false,
+          "returnType": "void",
+          "typeParameters": [],
+          "line": 229,
+          "deprecated": false,
+          "deprecationMessage": "",
+          "jsdoctags": [
+            {
+              "name": "val",
+              "type": "string",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "tagName": {
+                "text": "param"
+              }
+            },
+            {
+              "name": "event",
+              "type": "Event",
+              "deprecated": false,
+              "deprecationMessage": "",
+              "optional": true,
+              "tagName": {
+                "text": "param"
+              }
+            }
+          ]
+        },
+        {
           "name": "scrollToOption",
           "args": [],
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 299,
+          "line": 325,
           "deprecated": false,
           "deprecationMessage": "",
           "modifierKind": [123]
@@ -1958,7 +2233,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 290,
+          "line": 316,
           "deprecated": false,
           "deprecationMessage": "",
           "modifierKind": [123]
@@ -1983,7 +2258,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 144,
+          "line": 145,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -2021,7 +2296,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 124,
+          "line": 125,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -2050,7 +2325,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 129,
+          "line": 130,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -2079,7 +2354,7 @@
           "optional": false,
           "returnType": "void",
           "typeParameters": [],
-          "line": 111,
+          "line": 112,
           "deprecated": false,
           "deprecationMessage": "",
           "jsdoctags": [
@@ -2112,7 +2387,7 @@
           "argsDecorator": ["$event"],
           "deprecated": false,
           "deprecationMessage": "",
-          "line": 222
+          "line": 248
         }
       ],
       "standalone": true,
@@ -2133,7 +2408,7 @@
       "description": "",
       "rawdescription": "\n",
       "type": "component",
-      "sourceCode": "import {\r\n  Component,\r\n  HostListener,\r\n  ViewChild,\r\n  ElementRef,\r\n  ContentChildren,\r\n  QueryList,\r\n  AfterContentInit,\r\n  ChangeDetectorRef,\r\n  forwardRef,\r\n  Input,\r\n  Output,\r\n  EventEmitter,\r\n  Injector,\r\n} from '@angular/core';\r\nimport { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';\r\nimport { CommonModule } from '@angular/common';\r\nimport { FormsModule } from '@angular/forms';\r\nimport { SelectOptionComponent } from './select-option.component';\r\n\r\n@Component({\r\n  selector: 'lib-select',\r\n  templateUrl: './select.component.html',\r\n  styleUrls: ['./select.component.css'],\r\n  standalone: true,\r\n  imports: [CommonModule, FormsModule, SelectOptionComponent],\r\n  providers: [\r\n    {\r\n      provide: NG_VALUE_ACCESSOR,\r\n      useExisting: forwardRef(() => SelectComponent),\r\n      multi: true,\r\n    },\r\n  ],\r\n})\r\nexport class SelectComponent implements ControlValueAccessor, AfterContentInit {\r\n  @Input() placeholder = 'Select an option';\r\n  @Input() disabled = false;\r\n  @Input() multiple = false;\r\n  @Input() required = false;\r\n  @Input() panelClass = '';\r\n  @Input() tabIndex = 0;\r\n  @Input() ariaLabel = '';\r\n  @Input() ariaLabelledby = '';\r\n  @Input() options: { value: string | number; label: string }[] = [];\r\n\r\n  @Output() openedChange = new EventEmitter<boolean>();\r\n  @Output() selectionChange = new EventEmitter<string | string[] | null>();\r\n  @Output() closed = new EventEmitter<void>();\r\n\r\n  @ViewChild('trigger') trigger!: ElementRef;\r\n  @ViewChild('panel') panel!: ElementRef;\r\n  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;\r\n\r\n  @ContentChildren(SelectOptionComponent)\r\n  private optionsQueryList!: QueryList<SelectOptionComponent>;\r\n\r\n  isOpen = false;\r\n  searchText = '';\r\n  focusedOptionIndex = -1;\r\n  private _value: string | string[] | null = null;\r\n  private _onChange: (value: string | string[] | null) => void = () => {\r\n    // Initial placeholder - overridden by registerOnChange\r\n  };\r\n  private _onTouched = () => {\r\n    // Initial placeholder - overridden by registerOnTouched\r\n  };\r\n\r\n  constructor(private cdr: ChangeDetectorRef, private injector: Injector) {}\r\n\r\n  ngAfterContentInit() {\r\n    this.cdr.detectChanges();\r\n    if (this.options.length === 0 && this.optionsQueryList?.length) {\r\n      this.options = this.optionsQueryList.map((opt) => ({\r\n        value: opt.value,\r\n        label: opt.label,\r\n      }));\r\n    }\r\n  }\r\n\r\n  get value(): string | string[] | null {\r\n    return this._value;\r\n  }\r\n\r\n  set value(val: string | string[] | null) {\r\n    if (this._value !== val) {\r\n      this._value = val;\r\n      this._onChange(val);\r\n      this.selectionChange.emit(val);\r\n    }\r\n  }\r\n\r\n  get displayValue(): string {\r\n    if (!this.value) return this.placeholder;\r\n\r\n    if (this.multiple) {\r\n      if (!Array.isArray(this.value) || !this.options) return this.placeholder;\r\n      const selectedOptions = this.options.filter((opt) =>\r\n        (this.value as string[]).includes(opt.value.toString())\r\n      );\r\n      return (\r\n        selectedOptions.map((opt) => opt.label).join(', ') || this.placeholder\r\n      );\r\n    }\r\n\r\n    const selectedOption = this.options.find(\r\n      (opt) => opt.value.toString() === this.value\r\n    );\r\n    return selectedOption?.label ?? this.placeholder;\r\n  }\r\n\r\n  writeValue(value: string | string[] | null): void {\r\n    this._value = value;\r\n    this.cdr.markForCheck();\r\n  }\r\n\r\n  registerOnChange(fn: (value: string | string[] | null) => void): void {\r\n    this._onChange = fn;\r\n  }\r\n\r\n  registerOnTouched(fn: () => void): void {\r\n    this._onTouched = fn;\r\n  }\r\n\r\n  setDisabledState(isDisabled: boolean): void {\r\n    this.disabled = isDisabled;\r\n    this.cdr.markForCheck();\r\n  }\r\n\r\n  togglePanel(event?: Event): void {\r\n    event?.stopPropagation();\r\n    if (this.disabled) return;\r\n\r\n    this.isOpen = !this.isOpen;\r\n    this.openedChange.emit(this.isOpen);\r\n\r\n    if (this.isOpen) {\r\n      setTimeout(() => this.searchInput?.nativeElement.focus(), 0);\r\n      this.focusedOptionIndex = -1;\r\n    } else {\r\n      this.closed.emit();\r\n    }\r\n  }\r\n\r\n  selectOption(option: SelectOptionComponent, event?: Event): void {\r\n    event?.stopPropagation();\r\n    if (this.disabled) return;\r\n\r\n    if (this.multiple) {\r\n      const current = Array.isArray(this.value) ? [...this.value] : [];\r\n      this._value = current.includes(option.value.toString())\r\n        ? current.filter((v) => v !== option.value.toString())\r\n        : [...current, option.value.toString()];\r\n      this._onChange(this._value);\r\n      this.selectionChange.emit(this._value);\r\n    } else {\r\n      this._value = option.value.toString();\r\n      this._onChange(this._value);\r\n      this.isOpen = false;\r\n      this.closed.emit();\r\n      this.selectionChange.emit(this._value);\r\n    }\r\n\r\n    this._onTouched();\r\n    this.cdr.detectChanges();\r\n  }\r\n\r\n  isSelected(option: SelectOptionComponent): boolean {\r\n    if (!this.value) return false;\r\n\r\n    if (this.multiple) {\r\n      return (\r\n        Array.isArray(this.value) &&\r\n        this.value.includes(option.value.toString())\r\n      );\r\n    }\r\n    return this.value === option.value.toString();\r\n  }\r\n\r\n  get filteredOptions(): SelectOptionComponent[] {\r\n    let opts: SelectOptionComponent[] = [];\r\n\r\n    if (this.optionsQueryList?.length > 0) {\r\n      // Use content-projected options if available\r\n      opts = this.optionsQueryList.toArray();\r\n    } else if (this.options.length > 0) {\r\n      // Fallback to input options if no content children\r\n      opts = this.options.map((opt) => {\r\n        const comp = new SelectOptionComponent(this.injector.get(ElementRef));\r\n        comp.value = opt.value;\r\n        comp.label = opt.label;\r\n        comp.disabled = false;\r\n        comp.hidden = false;\r\n        comp.selected = this.isSelected(comp);\r\n        return comp;\r\n      });\r\n    }\r\n\r\n    if (!this.searchText) return opts;\r\n    return opts.filter((opt) =>\r\n      opt.label.toLowerCase().includes(this.searchText.toLowerCase())\r\n    );\r\n  }\r\n\r\n  // Public getters for test access\r\n  get optionCount(): number {\r\n    return this.optionsQueryList.length;\r\n  }\r\n\r\n  get firstOption(): SelectOptionComponent | undefined {\r\n    return this.optionsQueryList.first;\r\n  }\r\n\r\n  get optionsArray(): SelectOptionComponent[] {\r\n    return this.getOptionsArray();\r\n  }\r\n\r\n  private getOptionsArray(): SelectOptionComponent[] {\r\n    return this.optionsQueryList.toArray();\r\n  }\r\n\r\n  @HostListener('document:click', ['$event'])\r\n  onDocumentClick(event: MouseEvent): void {\r\n    if (!this.trigger.nativeElement.contains(event.target)) {\r\n      this.closePanel();\r\n    }\r\n  }\r\n\r\n  closePanel(): void {\r\n    if (this.isOpen) {\r\n      this.isOpen = false;\r\n      this.openedChange.emit(false);\r\n      this.closed.emit();\r\n    }\r\n  }\r\n\r\n  handleKeydown(event: KeyboardEvent): void {\r\n    if (\r\n      !this.isOpen &&\r\n      ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)\r\n    ) {\r\n      event.preventDefault();\r\n      this.togglePanel();\r\n      return;\r\n    }\r\n\r\n    switch (event.key) {\r\n      case 'ArrowDown':\r\n        event.preventDefault();\r\n        this.focusNextOption();\r\n        break;\r\n      case 'ArrowUp':\r\n        event.preventDefault();\r\n        this.focusPrevOption();\r\n        break;\r\n      case 'Enter':\r\n      case ' ':\r\n        event.preventDefault();\r\n        this.selectFocusedOption();\r\n        break;\r\n      case 'Escape':\r\n        event.preventDefault();\r\n        this.closePanel();\r\n        break;\r\n      case 'Tab':\r\n        this.closePanel();\r\n        break;\r\n    }\r\n  }\r\n\r\n  private focusNextOption(): void {\r\n    if (this.filteredOptions.length === 0) return;\r\n\r\n    this.focusedOptionIndex =\r\n      this.focusedOptionIndex < this.filteredOptions.length - 1\r\n        ? this.focusedOptionIndex + 1\r\n        : 0;\r\n    this.scrollToOption();\r\n  }\r\n\r\n  private focusPrevOption(): void {\r\n    if (this.filteredOptions.length === 0) return;\r\n\r\n    this.focusedOptionIndex =\r\n      this.focusedOptionIndex > 0\r\n        ? this.focusedOptionIndex - 1\r\n        : this.filteredOptions.length - 1;\r\n    this.scrollToOption();\r\n  }\r\n\r\n  private selectFocusedOption(): void {\r\n    if (\r\n      this.focusedOptionIndex >= 0 &&\r\n      this.focusedOptionIndex < this.filteredOptions.length\r\n    ) {\r\n      this.selectOption(this.filteredOptions[this.focusedOptionIndex]);\r\n    }\r\n  }\r\n\r\n  private scrollToOption(): void {\r\n    const options =\r\n      this.panel.nativeElement.querySelectorAll('lib-select-option');\r\n    if (options[this.focusedOptionIndex]) {\r\n      options[this.focusedOptionIndex].scrollIntoView({\r\n        behavior: 'smooth',\r\n        block: 'nearest',\r\n      });\r\n    }\r\n  }\r\n}\r\n",
+      "sourceCode": "import {\r\n  Component,\r\n  HostListener,\r\n  ViewChild,\r\n  ElementRef,\r\n  ContentChildren,\r\n  QueryList,\r\n  AfterContentInit,\r\n  ChangeDetectorRef,\r\n  forwardRef,\r\n  Input,\r\n  Output,\r\n  EventEmitter,\r\n  Injector,\r\n} from '@angular/core';\r\nimport { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';\r\nimport { CommonModule } from '@angular/common';\r\nimport { FormsModule } from '@angular/forms';\r\nimport { SelectOptionComponent } from './select-option.component';\r\n\r\n@Component({\r\n  selector: 'lib-select',\r\n  templateUrl: './select.component.html',\r\n  styleUrls: ['./select.component.css'],\r\n  standalone: true,\r\n  imports: [CommonModule, FormsModule, SelectOptionComponent],\r\n  providers: [\r\n    {\r\n      provide: NG_VALUE_ACCESSOR,\r\n      useExisting: forwardRef(() => SelectComponent),\r\n      multi: true,\r\n    },\r\n  ],\r\n})\r\nexport class SelectComponent implements ControlValueAccessor, AfterContentInit {\r\n  @Input() placeholder = 'Select an option';\r\n  @Input() disabled = false;\r\n  @Input() multiple = false;\r\n  @Input() required = false;\r\n  @Input() panelClass = '';\r\n  @Input() tabIndex = 0;\r\n  @Input() ariaLabel = '';\r\n  @Input() ariaLabelledby = '';\r\n  @Input() options: { value: string | number; label: string }[] = [];\r\n  @Input() width = '100%';\r\n\r\n  @Output() openedChange = new EventEmitter<boolean>();\r\n  @Output() selectionChange = new EventEmitter<string | string[] | null>();\r\n  @Output() closed = new EventEmitter<void>();\r\n\r\n  @ViewChild('trigger') trigger!: ElementRef;\r\n  @ViewChild('panel') panel!: ElementRef;\r\n  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;\r\n\r\n  @ContentChildren(SelectOptionComponent)\r\n  private optionsQueryList!: QueryList<SelectOptionComponent>;\r\n\r\n  isOpen = false;\r\n  searchText = '';\r\n  focusedOptionIndex = -1;\r\n  private _value: string | string[] | null = null;\r\n  private _onChange: (value: string | string[] | null) => void = () => {\r\n    // Initial placeholder - overridden by registerOnChange\r\n  };\r\n  private _onTouched = () => {\r\n    // Initial placeholder - overridden by registerOnTouched\r\n  };\r\n\r\n  constructor(private cdr: ChangeDetectorRef, private injector: Injector) {}\r\n\r\n  ngAfterContentInit() {\r\n    this.cdr.detectChanges();\r\n    if (this.options.length === 0 && this.optionsQueryList?.length) {\r\n      this.options = this.optionsQueryList.map((opt) => ({\r\n        value: opt.value,\r\n        label: opt.label,\r\n      }));\r\n    }\r\n  }\r\n\r\n  get value(): string | string[] | null {\r\n    return this._value;\r\n  }\r\n\r\n  set value(val: string | string[] | null) {\r\n    if (this._value !== val) {\r\n      this._value = val;\r\n      this._onChange(val);\r\n      this.selectionChange.emit(val);\r\n    }\r\n  }\r\n\r\n  get displayValue(): string {\r\n    if (!this.value) return this.placeholder;\r\n\r\n    if (this.multiple) {\r\n      if (!Array.isArray(this.value) || !this.options) return this.placeholder;\r\n      const selectedOptions = this.options.filter((opt) =>\r\n        (this.value as string[]).includes(opt.value.toString())\r\n      );\r\n      return (\r\n        selectedOptions.map((opt) => opt.label).join(', ') || this.placeholder\r\n      );\r\n    }\r\n\r\n    const selectedOption = this.options.find(\r\n      (opt) => opt.value.toString() === this.value\r\n    );\r\n    return selectedOption?.label ?? this.placeholder;\r\n  }\r\n\r\n  writeValue(value: string | string[] | null): void {\r\n    this._value = value;\r\n    this.cdr.markForCheck();\r\n  }\r\n\r\n  registerOnChange(fn: (value: string | string[] | null) => void): void {\r\n    this._onChange = fn;\r\n  }\r\n\r\n  registerOnTouched(fn: () => void): void {\r\n    this._onTouched = fn;\r\n  }\r\n\r\n  setDisabledState(isDisabled: boolean): void {\r\n    this.disabled = isDisabled;\r\n    this.cdr.markForCheck();\r\n  }\r\n\r\n  togglePanel(event?: Event): void {\r\n    event?.stopPropagation();\r\n    if (this.disabled) return;\r\n\r\n    this.isOpen = !this.isOpen;\r\n    this.openedChange.emit(this.isOpen);\r\n\r\n    if (this.isOpen) {\r\n      setTimeout(() => this.searchInput?.nativeElement.focus(), 0);\r\n      this.focusedOptionIndex = -1;\r\n    } else {\r\n      this.closed.emit();\r\n    }\r\n  }\r\n\r\n  selectOption(option: SelectOptionComponent, event?: Event): void {\r\n    event?.stopPropagation();\r\n    if (this.disabled) return;\r\n\r\n    if (this.multiple) {\r\n      const current = Array.isArray(this.value) ? [...this.value] : [];\r\n      this._value = current.includes(option.value.toString())\r\n        ? current.filter((v) => v !== option.value.toString())\r\n        : [...current, option.value.toString()];\r\n      this._onChange(this._value);\r\n      this.selectionChange.emit(this._value);\r\n    } else {\r\n      this._value = option.value.toString();\r\n      this._onChange(this._value);\r\n      this.isOpen = false;\r\n      this.closed.emit();\r\n      this.selectionChange.emit(this._value);\r\n    }\r\n\r\n    this._onTouched();\r\n    this.cdr.detectChanges();\r\n  }\r\n\r\n  isSelected(option: SelectOptionComponent): boolean {\r\n    if (!this.value) return false;\r\n\r\n    if (this.multiple) {\r\n      return (\r\n        Array.isArray(this.value) &&\r\n        this.value.includes(option.value.toString())\r\n      );\r\n    }\r\n    return this.value === option.value.toString();\r\n  }\r\n\r\n  get filteredOptions(): SelectOptionComponent[] {\r\n    let opts: SelectOptionComponent[] = [];\r\n\r\n    if (this.optionsQueryList?.length > 0) {\r\n      // Use content-projected options if available\r\n      opts = this.optionsQueryList.toArray();\r\n    } else if (this.options.length > 0) {\r\n      // Fallback to input options if no content children\r\n      opts = this.options.map((opt) => {\r\n        const comp = new SelectOptionComponent(this.injector.get(ElementRef));\r\n        comp.value = opt.value;\r\n        comp.label = opt.label;\r\n        comp.disabled = false;\r\n        comp.hidden = false;\r\n        comp.selected = this.isSelected(comp);\r\n        return comp;\r\n      });\r\n    }\r\n\r\n    if (!this.searchText) return opts;\r\n    return opts.filter((opt) =>\r\n      opt.label.toLowerCase().includes(this.searchText.toLowerCase())\r\n    );\r\n  }\r\n\r\n  // Public getters for test access\r\n  get optionCount(): number {\r\n    return this.optionsQueryList.length;\r\n  }\r\n\r\n  get firstOption(): SelectOptionComponent | undefined {\r\n    return this.optionsQueryList.first;\r\n  }\r\n\r\n  get optionsArray(): SelectOptionComponent[] {\r\n    return this.getOptionsArray();\r\n  }\r\n\r\n  private getOptionsArray(): SelectOptionComponent[] {\r\n    return this.optionsQueryList.toArray();\r\n  }\r\n\r\n  clearSelection(event?: Event): void {\r\n    event?.stopPropagation();\r\n    this.value = null;\r\n    this._onTouched();\r\n    this.cdr.detectChanges();\r\n  }\r\n\r\n  removeSelected(val: string, event?: Event): void {\r\n    event?.stopPropagation();\r\n    if (this.multiple && Array.isArray(this.value)) {\r\n      this.value = this.value.filter(v => v !== val);\r\n      this._onTouched();\r\n      this.cdr.detectChanges();\r\n    }\r\n  }\r\n\r\n  get selectedValues(): string[] {\r\n    return Array.isArray(this.value) ? this.value : [];\r\n  }\r\n\r\n  getLabelForValue(val: string): string {\r\n    const found = this.options.find(o => o.value.toString() === val);\r\n    return found ? found.label : val;\r\n  }\r\n\r\n  @HostListener('document:click', ['$event'])\r\n  onDocumentClick(event: MouseEvent): void {\r\n    if (!this.trigger.nativeElement.contains(event.target)) {\r\n      this.closePanel();\r\n    }\r\n  }\r\n\r\n  closePanel(): void {\r\n    if (this.isOpen) {\r\n      this.isOpen = false;\r\n      this.openedChange.emit(false);\r\n      this.closed.emit();\r\n    }\r\n  }\r\n\r\n  handleKeydown(event: KeyboardEvent): void {\r\n    if (\r\n      !this.isOpen &&\r\n      ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)\r\n    ) {\r\n      event.preventDefault();\r\n      this.togglePanel();\r\n      return;\r\n    }\r\n\r\n    switch (event.key) {\r\n      case 'ArrowDown':\r\n        event.preventDefault();\r\n        this.focusNextOption();\r\n        break;\r\n      case 'ArrowUp':\r\n        event.preventDefault();\r\n        this.focusPrevOption();\r\n        break;\r\n      case 'Enter':\r\n      case ' ':\r\n        event.preventDefault();\r\n        this.selectFocusedOption();\r\n        break;\r\n      case 'Escape':\r\n        event.preventDefault();\r\n        this.closePanel();\r\n        break;\r\n      case 'Tab':\r\n        this.closePanel();\r\n        break;\r\n    }\r\n  }\r\n\r\n  private focusNextOption(): void {\r\n    if (this.filteredOptions.length === 0) return;\r\n\r\n    this.focusedOptionIndex =\r\n      this.focusedOptionIndex < this.filteredOptions.length - 1\r\n        ? this.focusedOptionIndex + 1\r\n        : 0;\r\n    this.scrollToOption();\r\n  }\r\n\r\n  private focusPrevOption(): void {\r\n    if (this.filteredOptions.length === 0) return;\r\n\r\n    this.focusedOptionIndex =\r\n      this.focusedOptionIndex > 0\r\n        ? this.focusedOptionIndex - 1\r\n        : this.filteredOptions.length - 1;\r\n    this.scrollToOption();\r\n  }\r\n\r\n  private selectFocusedOption(): void {\r\n    if (\r\n      this.focusedOptionIndex >= 0 &&\r\n      this.focusedOptionIndex < this.filteredOptions.length\r\n    ) {\r\n      this.selectOption(this.filteredOptions[this.focusedOptionIndex]);\r\n    }\r\n  }\r\n\r\n  private scrollToOption(): void {\r\n    const options =\r\n      this.panel.nativeElement.querySelectorAll('lib-select-option');\r\n    if (options[this.focusedOptionIndex]) {\r\n      options[this.focusedOptionIndex].scrollIntoView({\r\n        behavior: 'smooth',\r\n        block: 'nearest',\r\n      });\r\n    }\r\n  }\r\n}\r\n",
       "assetsDirs": [],
       "styleUrlsData": [
         {
@@ -2161,7 +2436,7 @@
             "deprecationMessage": ""
           }
         ],
-        "line": 66,
+        "line": 67,
         "jsdoctags": [
           {
             "name": "cdr",
@@ -2202,7 +2477,7 @@
               }
             ],
             "returnType": "void",
-            "line": 84,
+            "line": 85,
             "jsdoctags": [
               {
                 "name": "val",
@@ -2219,7 +2494,7 @@
             "name": "value",
             "type": "",
             "returnType": "string | [] | null",
-            "line": 80
+            "line": 81
           }
         },
         "displayValue": {
@@ -2228,7 +2503,7 @@
             "name": "displayValue",
             "type": "string",
             "returnType": "string",
-            "line": 92
+            "line": 93
           }
         },
         "filteredOptions": {
@@ -2237,7 +2512,7 @@
             "name": "filteredOptions",
             "type": "[]",
             "returnType": "SelectOptionComponent[]",
-            "line": 179
+            "line": 180
           }
         },
         "optionCount": {
@@ -2246,7 +2521,7 @@
             "name": "optionCount",
             "type": "number",
             "returnType": "number",
-            "line": 205
+            "line": 206
           }
         },
         "firstOption": {
@@ -2255,7 +2530,7 @@
             "name": "firstOption",
             "type": "",
             "returnType": "SelectOptionComponent | undefined",
-            "line": 209
+            "line": 210
           }
         },
         "optionsArray": {
@@ -2264,11 +2539,20 @@
             "name": "optionsArray",
             "type": "[]",
             "returnType": "SelectOptionComponent[]",
-            "line": 213
+            "line": 214
+          }
+        },
+        "selectedValues": {
+          "name": "selectedValues",
+          "getSignature": {
+            "name": "selectedValues",
+            "type": "[]",
+            "returnType": "string[]",
+            "line": 238
           }
         }
       },
-      "templateData": "<div class=\"relative w-full\" #trigger>\r\n  <div class=\"relative\">\r\n    <input\r\n      type=\"text\"\r\n      [placeholder]=\"placeholder\"\r\n      [disabled]=\"disabled\"\r\n      [required]=\"required\"\r\n      [readonly]=\"true\"\r\n      [value]=\"displayValue\"\r\n      [tabIndex]=\"tabIndex\"\r\n      [attr.aria-label]=\"ariaLabel || null\"\r\n      [attr.aria-labelledby]=\"ariaLabelledby || null\"\r\n      class=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer\"\r\n      (click)=\"togglePanel($event)\"\r\n      (keydown)=\"handleKeydown($event)\"\r\n    />\r\n    <svg\r\n      xmlns=\"http://www.w3.org/2000/svg\"\r\n      class=\"absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200\"\r\n      [class.rotate-180]=\"isOpen\"\r\n      viewBox=\"0 0 20 20\"\r\n      fill=\"currentColor\"\r\n      aria-hidden=\"true\"\r\n    >\r\n      <path\r\n        fill-rule=\"evenodd\"\r\n        d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\"\r\n        clip-rule=\"evenodd\"\r\n      />\r\n    </svg>\r\n  </div>\r\n\r\n  <div\r\n    *ngIf=\"isOpen\"\r\n    #panel\r\n    class=\"absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden\"\r\n    [class]=\"panelClass\"\r\n    [class.max-h-60]=\"!panelClass\"\r\n    role=\"listbox\"\r\n    [attr.aria-multiselectable]=\"multiple\"\r\n    [attr.aria-activedescendant]=\"\r\n      focusedOptionIndex >= 0 ? 'option-' + focusedOptionIndex : null\r\n    \"\r\n  >\r\n    <div\r\n      *ngIf=\"options && options.length > 5\"\r\n      class=\"sticky top-0 bg-white p-2 border-b border-gray-200\"\r\n    >\r\n      <input\r\n        #searchInput\r\n        [(ngModel)]=\"searchText\"\r\n        class=\"w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500\"\r\n        placeholder=\"Search...\"\r\n        (click)=\"$event.stopPropagation()\"\r\n        aria-label=\"Filter options\"\r\n      />\r\n    </div>\r\n\r\n    <div class=\"overflow-y-auto max-h-[244px]\">\r\n      <ng-container *ngIf=\"filteredOptions.length > 0; else noOptions\">\r\n        <lib-select-option\r\n          *ngFor=\"let option of filteredOptions; let i = index\"\r\n          [value]=\"option.value\"\r\n          [label]=\"option.label\"\r\n          [disabled]=\"option.disabled\"\r\n          [selected]=\"isSelected(option)\"\r\n          (click)=\"selectOption(option, $event)\"\r\n          [id]=\"'option-' + i\"\r\n          [class.bg-blue-100]=\"i === focusedOptionIndex\"\r\n        >\r\n          <ng-container *ngIf=\"multiple\">\r\n            <svg\r\n              *ngIf=\"isSelected(option)\"\r\n              xmlns=\"http://www.w3.org/2000/svg\"\r\n              class=\"h-5 w-5 mr-2 text-blue-600\"\r\n              viewBox=\"0 0 20 20\"\r\n              fill=\"currentColor\"\r\n            >\r\n              <path\r\n                fill-rule=\"evenodd\"\r\n                d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\"\r\n                clip-rule=\"evenodd\"\r\n              />\r\n            </svg>\r\n            <span *ngIf=\"!isSelected(option)\" class=\"w-5 mr-2\"></span>\r\n          </ng-container>\r\n          {{ option.label }}\r\n        </lib-select-option>\r\n      </ng-container>\r\n\r\n      <ng-template #noOptions>\r\n        <div class=\"px-4 py-2 text-sm text-gray-500 text-center\">\r\n          No options found\r\n        </div>\r\n      </ng-template>\r\n    </div>\r\n  </div>\r\n</div>\r\n"
+      "templateData": "<div class=\"relative w-full\" #trigger [style.width]=\"width\">\r\n  <div class=\"relative\">\r\n    <input\r\n      type=\"text\"\r\n      [placeholder]=\"placeholder\"\r\n      [disabled]=\"disabled\"\r\n      [required]=\"required\"\r\n      [readonly]=\"true\"\r\n      [value]=\"displayValue\"\r\n      [tabIndex]=\"tabIndex\"\r\n      [attr.aria-label]=\"ariaLabel || null\"\r\n      [attr.aria-labelledby]=\"ariaLabelledby || null\"\r\n      class=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer\"\r\n      (click)=\"togglePanel($event)\"\r\n      (keydown)=\"handleKeydown($event)\"\r\n    />\r\n    <!-- Dismiss/Clear icon for single select -->\r\n    <button *ngIf=\"!multiple && value\" type=\"button\" (click)=\"clearSelection($event)\"\r\n      class=\"absolute right-8 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-red-500 focus:outline-none\">\r\n      <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\r\n        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\" />\r\n      </svg>\r\n    </button>\r\n    <!-- Selected chips for multiple select -->\r\n    <div *ngIf=\"multiple && selectedValues.length\" class=\"flex flex-wrap gap-1 mt-1\">\r\n      <span *ngFor=\"let val of selectedValues\" class=\"inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs\">\r\n        {{ getLabelForValue(val) }}\r\n        <button type=\"button\" (click)=\"removeSelected(val, $event)\" class=\"ml-1 text-blue-500 hover:text-red-500 focus:outline-none\">\r\n          <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" class=\"h-4 w-4\">\r\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\" />\r\n          </svg>\r\n        </button>\r\n      </span>\r\n    </div>\r\n  </div>\r\n\r\n  <div\r\n    *ngIf=\"isOpen\"\r\n    #panel\r\n    class=\"absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden\"\r\n    [class]=\"panelClass\"\r\n    [class.max-h-60]=\"!panelClass\"\r\n    role=\"listbox\"\r\n    [attr.aria-multiselectable]=\"multiple\"\r\n    [attr.aria-activedescendant]=\"\r\n      focusedOptionIndex >= 0 ? 'option-' + focusedOptionIndex : null\r\n    \"\r\n  >\r\n    <div\r\n      *ngIf=\"options && options.length > 5\"\r\n      class=\"sticky top-0 bg-white p-2 border-b border-gray-200\"\r\n    >\r\n      <input\r\n        #searchInput\r\n        [(ngModel)]=\"searchText\"\r\n        class=\"w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500\"\r\n        placeholder=\"Search...\"\r\n        (click)=\"$event.stopPropagation()\"\r\n        aria-label=\"Filter options\"\r\n      />\r\n    </div>\r\n\r\n    <div class=\"overflow-y-auto max-h-[244px]\">\r\n      <ng-container *ngIf=\"filteredOptions.length > 0; else noOptions\">\r\n        <lib-select-option\r\n          *ngFor=\"let option of filteredOptions; let i = index\"\r\n          [value]=\"option.value\"\r\n          [label]=\"option.label\"\r\n          [disabled]=\"option.disabled\"\r\n          [selected]=\"isSelected(option)\"\r\n          (click)=\"selectOption(option, $event)\"\r\n          [id]=\"'option-' + i\"\r\n          [class.bg-blue-100]=\"i === focusedOptionIndex\"\r\n        >\r\n          <ng-container *ngIf=\"multiple\">\r\n            <svg\r\n              *ngIf=\"isSelected(option)\"\r\n              xmlns=\"http://www.w3.org/2000/svg\"\r\n              class=\"h-5 w-5 mr-2 text-blue-600\"\r\n              viewBox=\"0 0 20 20\"\r\n              fill=\"currentColor\"\r\n            >\r\n              <path\r\n                fill-rule=\"evenodd\"\r\n                d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\"\r\n                clip-rule=\"evenodd\"\r\n              />\r\n            </svg>\r\n            <span *ngIf=\"!isSelected(option)\" class=\"w-5 mr-2\"></span>\r\n          </ng-container>\r\n          {{ option.label }}\r\n        </lib-select-option>\r\n      </ng-container>\r\n\r\n      <ng-template #noOptions>\r\n        <div class=\"px-4 py-2 text-sm text-gray-500 text-center\">\r\n          No options found\r\n        </div>\r\n      </ng-template>\r\n    </div>\r\n  </div>\r\n</div>\r\n"
     },
     {
       "name": "SelectOptionComponent",
@@ -2479,27 +2763,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'accent',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\r\n  }),\r\n}"
-      },
-      {
-        "name": "Basic",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "object",
-        "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Pick a color',\r\n    options: [\r\n      { label: 'Red', value: 'red' },\r\n      { label: 'Green', value: 'green' },\r\n      { label: 'Blue', value: 'blue' },\r\n      { label: 'Yellow', value: 'yellow' },\r\n    ],\r\n  },\r\n}"
-      },
-      {
-        "name": "Colored",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    color: '#ef4444', // Tailwind red-500\r\n  },\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "BasicSnackBar",
@@ -2529,7 +2793,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "StorybookConfig",
-        "defaultValue": "{\r\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\r\n  framework: {\r\r\n    name: '@storybook/angular',\r\r\n    options: {},\r\r\n  },\r\r\n  docs: {\r\r\n    autodocs: true,\r\r\n    defaultName: 'Docs',\r\r\n  },\r\r\n}"
+        "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
       },
       {
         "name": "ConfigurablePosition",
@@ -2542,6 +2806,16 @@
         "defaultValue": "{\r\n  args: {\r\n    message: 'Pool party!',\r\n    type: 'info',\r\n    duration: 5000,\r\n    position: 'bottom-right',\r\n  },\r\n}"
       },
       {
+        "name": "CustomizeDropdown",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "StoryObj<SelectComponent>",
+        "defaultValue": "{\r\n  args: {\r\n    width: '300px',\r\n    options: [\r\n      { value: 'a', label: 'Alpha' },\r\n      { value: 'b', label: 'Beta' },\r\n      { value: 'c', label: 'Gamma' },\r\n    ],\r\n  },\r\n  argTypes: {\r\n    options: {\r\n      control: 'object',\r\n      description:\r\n        'Options for the dropdown. You can edit the label and value here.',\r\n    },\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Custom Dropdown</label>\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        [width]=\"width\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
+      },
+      {
         "name": "CustomStyled",
         "ctype": "miscellaneous",
         "subtype": "variable",
@@ -2549,7 +2823,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\r\n  }),\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    class: 'text-lg px-6 py-3 bg-green-500 hover:bg-green-600',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [class]=\"class\">Custom Styled Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "CustomStyled",
@@ -2569,17 +2843,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\n  args: {},\r\r\n}"
-      },
-      {
-        "name": "CustomStyled",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    progress: 60,\r\n    color: 'primary',\r\n    variant: 'determinate',\r\n    class: 'h-6 rounded-lg',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\" [class]=\"class\"></lib-progress-bar>`,\r\n  }),\r\n}"
+        "defaultValue": "{\r\n  args: {},\r\n}"
       },
       {
         "name": "Default",
@@ -2600,46 +2864,6 @@
         "deprecationMessage": "",
         "type": "StoryObj<PaginatorComponent>",
         "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
-      },
-      {
-        "name": "Default",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    progress: 25,\r\n    color: \"primary\",\r\n    variant: 'determinate',\r\n    bufferProgress: 0\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
-      },
-      {
-        "name": "Determinate",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/paginator/paginator.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "StoryObj<PaginatorComponent>",
-        "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
-      },
-      {
-        "name": "Default",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {},\r\n}"
-      },
-      {
-        "name": "Default",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {},\r\n}"
       },
       {
         "name": "Default",
@@ -2689,37 +2913,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    disabled: true,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\r\n  }),\r\n}"
-      },
-      {
-        "name": "GreenBuffer",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    progress: 40,\r\n    bufferProgress: 5,\r\n    color: 'success',\r\n    variant: 'buffer',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [buffer]=\"buffer\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
-      },
-      {
-        "name": "GreenProgress",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    progress: 70,\r\n    color: 'success',\r\n    variant: 'determinate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [progress]=\"progress\" [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
-      },
-      {
-        "name": "Large",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    size: 60,\r\n  },\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: true,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Disabled Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "DismissibleError",
@@ -2785,51 +2979,31 @@
         "name": "meta",
         "ctype": "miscellaneous",
         "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "Meta<AccordionComponent>",
+        "defaultValue": "{\r\n  title: 'Components/Accordion',\r\n  component: AccordionComponent,\r\n  decorators: [\r\n    moduleMetadata({\r\n      imports: [AccordionComponent, AccordionPanelComponent],\r\n    }),\r\n  ],\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    multi: {\r\n      control: 'boolean',\r\n      description: 'Allow multiple panels to be open',\r\n    },\r\n  },\r\n}"
+      },
+      {
+        "name": "meta",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "Meta<ButtonComponent>",
+        "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
+      },
+      {
+        "name": "meta",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
         "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Meta<AlertComponent>",
         "defaultValue": "{\r\n  title: 'Components/Alert',\r\n  component: AlertComponent,\r\n  decorators: [\r\n    applicationConfig({\r\n      providers: [provideAnimations()],\r\n    }),\r\n  ],\r\n  args: {},\r\n  argTypes: {\r\n    message: { control: 'text' },\r\n    type: {\r\n      control: 'select',\r\n      options: ['success', 'warning', 'error', 'info'],\r\n    },\r\n    duration: { control: 'number' },\r\n    action: { control: 'text' },\r\n    dismissible: { control: 'boolean' },\r\n    position: {\r\n      control: 'select',\r\n      options: [\r\n        'top-left',\r\n        'top-center',\r\n        'top-right',\r\n        'bottom-left',\r\n        'bottom-center',\r\n        'bottom-right',\r\n      ],\r\n    },\r\n    icon: {\r\n      control: 'select',\r\n      options: [\r\n        '',\r\n        'pizza',\r\n        'mood',\r\n        'star',\r\n        'favorite',\r\n        'thumb_up',\r\n        'lightbulb',\r\n        'coffee',\r\n        'cloud',\r\n        'music_note',\r\n        'pets',\r\n        'rocket',\r\n        'beach_access',\r\n      ],\r\n    },\r\n    animation: { control: 'select', options: ['fade', 'slide'] },\r\n  },\r\n}"
-      },
-      {
-        "name": "meta",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Meta<ButtonComponent>",
-        "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
-      },
-      {
-        "name": "meta",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Meta<IconComponent>",
-        "defaultValue": "{\r\r\n  title: 'Components/Icon',\r\r\n  component: IconComponent,\r\r\n  tags: ['autodocs'],\r\r\n  argTypes: {\r\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\r\n    size: { \r\r\n      control: 'radio', \r\r\n      options: ['sm', 'md', 'lg', 'xl'], \r\r\n      description: 'Size of the icon' \r\r\n    },\r\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\r\n  },\r\n}"
-      },
-      {
-        "name": "meta",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Meta<ButtonComponent>",
-        "defaultValue": "{\r\n  title: 'Components/Button',\r\n  component: ButtonComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    variant: {\r\n      control: 'select',\r\n      options: ['primary', 'accent', 'outline', 'text'],\r\n      description: 'Button style variant',\r\n    },\r\n    disabled: {\r\n      control: 'boolean',\r\n      description: 'Disables the button',\r\n    },\r\n    class: {\r\n      control: 'text',\r\n      description: 'Additional Tailwind CSS classes for customization',\r\n    },\r\n  },\r\n}"
-      },
-      {
-        "name": "meta",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Meta<ProgressBarComponent>",
-        "defaultValue": "{\r\n  title: 'Components/Progress Bar',\r\n  component: ProgressBarComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    progress: {\r\n      control: { type: 'range', min: 0, max: 100, step: 1 },\r\n      description: 'Progress percentage (0 to 100)',\r\n    },\r\n    // buffer: {\r\n    //   control: { type: 'range', min: 0, max: 100, step: 1 },\r\n    //   description: 'Buffer progress percentage (used in buffer variant)',\r\n    // },\r\n    color: {\r\n      control: 'select',\r\n      options: ['primary', 'secondary', 'success', 'error'],\r\n      description: 'Color of the progress bar',\r\n    },\r\n    variant: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate', 'buffer', 'query'],\r\n      description: 'Progress bar type',\r\n    },\r\n    // class: {\r\n    //   control: 'text',\r\n    //   description: 'Additional Tailwind CSS classes for customization',\r\n    // },\r\n  },\r\r\n}"
       },
       {
         "name": "meta",
@@ -2845,11 +3019,31 @@
         "name": "meta",
         "ctype": "miscellaneous",
         "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "Meta<IconComponent>",
+        "defaultValue": "{\r\n  title: 'Components/Icon',\r\n  component: IconComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    name: { control: 'text', description: 'Icon name from Material Icons' },\r\n    size: { \r\n      control: 'radio', \r\n      options: ['sm', 'md', 'lg', 'xl'], \r\n      description: 'Size of the icon' \r\n    },\r\n    color: { control: 'text', description: 'Tailwind color classes' },\r\n  },\r\n}"
+      },
+      {
+        "name": "meta",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
         "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Meta<ProgressBarComponent>",
         "defaultValue": "{\r\n  title: 'Components/Progress Bar',\r\n  component: ProgressBarComponent,\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    progress: {\r\n      control: { type: 'range', min: 0, max: 100, step: 1 },\r\n      description: 'Progress percentage (0 to 100)',\r\n    },\r\n    // buffer: {\r\n    //   control: { type: 'range', min: 0, max: 100, step: 1 },\r\n    //   description: 'Buffer progress percentage (used in buffer variant)',\r\n    // },\r\n    color: {\r\n      control: 'select',\r\n      options: ['primary', 'secondary', 'success', 'error'],\r\n      description: 'Color of the progress bar',\r\n    },\r\n    variant: {\r\n      control: 'select',\r\n      options: ['determinate', 'indeterminate', 'buffer', 'query'],\r\n      description: 'Progress bar type',\r\n    },\r\n    // class: {\r\n    //   control: 'text',\r\n    //   description: 'Additional Tailwind CSS classes for customization',\r\n    // },\r\n  },\r\n}"
+      },
+      {
+        "name": "MultiExpansion",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "Story",
+        "defaultValue": "{\r\n  args: { multi: true },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Accordion Demo</label>\r\n      <lib-accordion [multi]=\"multi\">\r\n        <lib-accordion-panel header=\"Item A\">\r\n          <p>Content A</p>\r\n        </lib-accordion-panel>\r\n        <lib-accordion-panel header=\"Item B\">\r\n          <p>Content B</p>\r\n        </lib-accordion-panel>\r\n      </lib-accordion>\r\n    `,\r\n  }),\r\n}"
       },
       {
         "name": "Multiple",
@@ -2869,7 +3063,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'outline',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\r\n  }),\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'outline',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Outline Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "parameters",
@@ -2879,7 +3073,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "object",
-        "defaultValue": "{\r\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\r\n  controls: {\r\r\n    matchers: {\r\r\n      color: /(background|color)$/i,\r\r\n      date: /Date$/,\r\r\n    },\r\r\n  },\r\r\n}"
+        "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
       },
       {
         "name": "Primary",
@@ -2889,17 +3083,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'primary',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\r\n  }),\r\n}"
-      },
-      {
-        "name": "RedIndeterminate",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'primary',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Primary Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "RedIndeterminate",
@@ -2912,6 +3096,16 @@
         "defaultValue": "{\r\n  args: {\r\n    color: 'error',\r\n    variant: 'indeterminate',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-progress-bar [color]=\"color\" [variant]=\"variant\"></lib-progress-bar>`,\r\n  }),\r\n}"
       },
       {
+        "name": "SingleExpansion",
+        "ctype": "miscellaneous",
+        "subtype": "variable",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "type": "Story",
+        "defaultValue": "{\r\n  args: { multi: false },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Accordion Demo</label>\r\n      <lib-accordion [multi]=\"multi\">\r\n        <lib-accordion-panel header=\"Section 1\">\r\n          <p>Content for section 1</p>\r\n        </lib-accordion-panel>\r\n        <lib-accordion-panel header=\"Section 2\">\r\n          <p>Content for section 2</p>\r\n        </lib-accordion-panel>\r\n      </lib-accordion>\r\n    `,\r\n  }),\r\n}"
+      },
+      {
         "name": "SmallBlueIcon",
         "ctype": "miscellaneous",
         "subtype": "variable",
@@ -2919,17 +3113,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    name: 'star',\r\r\n    size: 'sm',\r\r\n    color: 'text-blue-500',\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\r\n  }),\r\n}"
-      },
-      {
-        "name": "Template",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "StoryObj<SelectComponent>",
-        "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n  }),\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    name: 'star',\r\n    size: 'sm',\r\n    color: 'text-blue-500',\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-icon [name]=\"name\" [size]=\"size\" [color]=\"color\"></lib-icon>`,\r\n  }),\r\n}"
       },
       {
         "name": "StackedAlerts",
@@ -2959,37 +3143,7 @@
         "deprecated": false,
         "deprecationMessage": "",
         "type": "Story",
-        "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'text',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\r\n  }),\r\n}"
-      },
-      {
-        "name": "Thick",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "Story",
-        "defaultValue": "{\r\n  args: {\r\n    thickness: 6,\r\n  },\r\n}"
-      },
-      {
-        "name": "WithMultiple",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "object",
-        "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Select multiple',\r\n    multiple: true,\r\n    options: [\r\n      { label: 'Apple', value: 'apple' },\r\n      { label: 'Banana', value: 'banana' },\r\n      { label: 'Mango', value: 'mango' },\r\n    ],\r\n  },\r\n}"
-      },
-      {
-        "name": "WithValidation",
-        "ctype": "miscellaneous",
-        "subtype": "variable",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "type": "object",
-        "defaultValue": "{\r\n  ...Template,\r\n  args: {\r\n    placeholder: 'Required field',\r\n    required: true,\r\n    options: [\r\n      { label: 'Item A', value: 'a' },\r\n      { label: 'Item B', value: 'b' },\r\n    ],\r\n  },\r\r\n}"
+        "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
       },
       {
         "name": "Thick",
@@ -3018,6 +3172,28 @@
         "name": "Story",
         "ctype": "miscellaneous",
         "subtype": "typealias",
+        "rawtype": "StoryObj<AccordionComponent>",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "description": "",
+        "kind": 183
+      },
+      {
+        "name": "Story",
+        "ctype": "miscellaneous",
+        "subtype": "typealias",
+        "rawtype": "StoryObj<ButtonComponent>",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+        "deprecated": false,
+        "deprecationMessage": "",
+        "description": "",
+        "kind": 183
+      },
+      {
+        "name": "Story",
+        "ctype": "miscellaneous",
+        "subtype": "typealias",
         "rawtype": "StoryObj<AlertComponent>",
         "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
         "deprecated": false,
@@ -3029,8 +3205,8 @@
         "name": "Story",
         "ctype": "miscellaneous",
         "subtype": "typealias",
-        "rawtype": "StoryObj<ButtonComponent>",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
+        "rawtype": "StoryObj<LoadingSpinnerComponent>",
+        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "description": "",
@@ -3042,39 +3218,6 @@
         "subtype": "typealias",
         "rawtype": "StoryObj<IconComponent>",
         "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "description": "",
-        "kind": 183
-      },
-      {
-        "name": "Story",
-        "ctype": "miscellaneous",
-        "subtype": "typealias",
-        "rawtype": "StoryObj<ButtonComponent>",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/button/button.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "description": "",
-        "kind": 183
-      },
-      {
-        "name": "Story",
-        "ctype": "miscellaneous",
-        "subtype": "typealias",
-        "rawtype": "StoryObj<ProgressBarComponent>",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts",
-        "deprecated": false,
-        "deprecationMessage": "",
-        "description": "",
-        "kind": 183
-      },
-      {
-        "name": "Story",
-        "ctype": "miscellaneous",
-        "subtype": "typealias",
-        "rawtype": "StoryObj<LoadingSpinnerComponent>",
-        "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
         "deprecated": false,
         "deprecationMessage": "",
         "description": "",
@@ -3103,7 +3246,7 @@
           "deprecated": false,
           "deprecationMessage": "",
           "type": "Story",
-          "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'accent',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\r\n  }),\r\r\n}"
+          "defaultValue": "{\r\n  args: {\r\n    variant: 'accent',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Accent Button</lib-button>`,\r\n  }),\r\n}"
         },
         {
           "name": "CustomStyled",
@@ -3163,7 +3306,79 @@
           "deprecated": false,
           "deprecationMessage": "",
           "type": "Story",
-          "defaultValue": "{\r\r\n  args: {\r\r\n    variant: 'text',\r\r\n    disabled: false,\r\r\n  },\r\r\n  render: (args) => ({\r\r\n    props: args,\r\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\r\n  }),\r\n}"
+          "defaultValue": "{\r\n  args: {\r\n    variant: 'text',\r\n    disabled: false,\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `<lib-button [variant]=\"variant\" [disabled]=\"disabled\">Text Button</lib-button>`,\r\n  }),\r\n}"
+        }
+      ],
+      "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
+        {
+          "name": "BasicSnackBar",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    message: 'Disco party!',\r\n    type: 'info',\r\n    action: 'Dance',\r\n    duration: 5000,\r\n    position: 'bottom-center',\r\n  },\r\n}"
+        },
+        {
+          "name": "ConfigurablePosition",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    message: 'Pool party!',\r\n    type: 'info',\r\n    duration: 5000,\r\n    position: 'bottom-right',\r\n  },\r\n}"
+        },
+        {
+          "name": "DismissibleError",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    message: 'Something went wrong',\r\n    type: 'error',\r\n    dismissible: true,\r\n    duration: 0,\r\n    position: 'top-right',\r\n  },\r\n}"
+        },
+        {
+          "name": "meta",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Meta<AlertComponent>",
+          "defaultValue": "{\r\n  title: 'Components/Alert',\r\n  component: AlertComponent,\r\n  decorators: [\r\n    applicationConfig({\r\n      providers: [provideAnimations()],\r\n    }),\r\n  ],\r\n  args: {},\r\n  argTypes: {\r\n    message: { control: 'text' },\r\n    type: {\r\n      control: 'select',\r\n      options: ['success', 'warning', 'error', 'info'],\r\n    },\r\n    duration: { control: 'number' },\r\n    action: { control: 'text' },\r\n    dismissible: { control: 'boolean' },\r\n    position: {\r\n      control: 'select',\r\n      options: [\r\n        'top-left',\r\n        'top-center',\r\n        'top-right',\r\n        'bottom-left',\r\n        'bottom-center',\r\n        'bottom-right',\r\n      ],\r\n    },\r\n    icon: {\r\n      control: 'select',\r\n      options: [\r\n        '',\r\n        'pizza',\r\n        'mood',\r\n        'star',\r\n        'favorite',\r\n        'thumb_up',\r\n        'lightbulb',\r\n        'coffee',\r\n        'cloud',\r\n        'music_note',\r\n        'pets',\r\n        'rocket',\r\n        'beach_access',\r\n      ],\r\n    },\r\n    animation: { control: 'select', options: ['fade', 'slide'] },\r\n  },\r\n}"
+        },
+        {
+          "name": "StackedAlerts",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<>",
+          "defaultValue": "{\r\n  render: (args: StackedAlertsArgs) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-alert\r\n        [message]=\"firstMessage\"\r\n        [type]=\"firstType\"\r\n        [action]=\"firstAction\"\r\n        [dismissible]=\"firstDismissible\"\r\n        [icon]=\"firstIcon\"\r\n        [duration]=\"firstDuration\"\r\n        [animation]=\"firstAnimation\"\r\n        [position]=\"firstPosition\"\r\n        [bypassDuplicateCheck]=\"true\"\r\n      ></lib-alert>\r\n      <lib-alert\r\n        [message]=\"secondMessage\"\r\n        [type]=\"secondType\"\r\n        [action]=\"secondAction\"\r\n        [dismissible]=\"secondDismissible\"\r\n        [icon]=\"secondIcon\"\r\n        [duration]=\"secondDuration\"\r\n        [animation]=\"secondAnimation\"\r\n        [position]=\"secondPosition\"\r\n        [bypassDuplicateCheck]=\"true\"\r\n      ></lib-alert>\r\n      <lib-alert\r\n        [message]=\"thirdMessage\"\r\n        [type]=\"thirdType\"\r\n        [action]=\"thirdAction\"\r\n        [dismissible]=\"thirdDismissible\"\r\n        [icon]=\"thirdIcon\"\r\n        [duration]=\"thirdDuration\"\r\n        [animation]=\"thirdAnimation\"\r\n        [position]=\"thirdPosition\"\r\n        [bypassDuplicateCheck]=\"true\"\r\n      ></lib-alert>\r\n    `,\r\n  }),\r\n  args: {\r\n    firstMessage: 'First alert',\r\n    firstType: 'success',\r\n    firstAction: null,\r\n    firstDismissible: true,\r\n    firstIcon: 'star',\r\n    firstDuration: 50000,\r\n    firstAnimation: 'slide',\r\n    firstPosition: 'top-right',\r\n\r\n    secondMessage: 'Second alert',\r\n    secondType: 'warning',\r\n    secondAction: null,\r\n    secondDismissible: true,\r\n    secondIcon: null,\r\n    secondDuration: 50000,\r\n    secondAnimation: 'slide',\r\n    secondPosition: 'top-right',\r\n\r\n    thirdMessage: 'Third alert',\r\n    thirdType: 'error',\r\n    thirdAction: null,\r\n    thirdDismissible: true,\r\n    thirdIcon: null,\r\n    thirdDuration: 50000,\r\n    thirdAnimation: 'slide',\r\n    thirdPosition: 'top-right',\r\n  } as StackedAlertsArgs,\r\n  argTypes: {\r\n    // First Alert Controls\r\n    firstMessage: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'First Alert Message',\r\n    },\r\n    firstType: {\r\n      control: 'select',\r\n      options: ['success', 'error', 'warning', 'info'],\r\n      name: 'First Alert Type',\r\n    },\r\n    firstAction: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'First Alert Action',\r\n    },\r\n    firstDismissible: { control: 'boolean', name: 'First Alert Dismissible' },\r\n    firstIcon: {\r\n      control: 'select',\r\n      options: [\r\n        '',\r\n        'pizza',\r\n        'mood',\r\n        'star',\r\n        'favorite',\r\n        'thumb_up',\r\n        'lightbulb',\r\n        'coffee',\r\n        'cloud',\r\n        'music_note',\r\n        'pets',\r\n        'rocket',\r\n        'beach_access',\r\n      ],\r\n      name: 'First Alert Icon',\r\n    },\r\n    firstDuration: { control: 'number', name: 'First Alert Duration' },\r\n    firstAnimation: {\r\n      control: 'select',\r\n      options: ['fade', 'slide'],\r\n      name: 'First Alert Animation',\r\n    },\r\n    firstPosition: {\r\n      control: 'select',\r\n      options: [\r\n        'top-left',\r\n        'top-center',\r\n        'top-right',\r\n        'bottom-left',\r\n        'bottom-center',\r\n        'bottom-right',\r\n      ],\r\n      name: 'First Alert Position',\r\n    },\r\n\r\n    // Second Alert Controls\r\n    secondMessage: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'Second Alert Message',\r\n    },\r\n    secondType: {\r\n      control: 'select',\r\n      options: ['success', 'error', 'warning', 'info'],\r\n      name: 'Second Alert Type',\r\n    },\r\n    secondAction: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'Second Alert Action',\r\n    },\r\n    secondDismissible: { control: 'boolean', name: 'Second Alert Dismissible' },\r\n    secondIcon: {\r\n      control: 'select',\r\n      options: [\r\n        '',\r\n        'pizza',\r\n        'mood',\r\n        'star',\r\n        'favorite',\r\n        'thumb_up',\r\n        'lightbulb',\r\n        'coffee',\r\n        'cloud',\r\n        'music_note',\r\n        'pets',\r\n        'rocket',\r\n        'beach_access',\r\n      ],\r\n      name: 'Second Alert Icon',\r\n    },\r\n    secondDuration: { control: 'number', name: 'Second Alert Duration' },\r\n    secondAnimation: {\r\n      control: 'select',\r\n      options: ['fade', 'slide'],\r\n      name: 'Second Alert Animation',\r\n    },\r\n    secondPosition: {\r\n      control: 'select',\r\n      options: [\r\n        'top-left',\r\n        'top-center',\r\n        'top-right',\r\n        'bottom-left',\r\n        'bottom-center',\r\n        'bottom-right',\r\n      ],\r\n      name: 'Second Alert Position',\r\n    },\r\n\r\n    // Third Alert Controls\r\n    thirdMessage: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'Third Alert Message',\r\n    },\r\n    thirdType: {\r\n      control: 'select',\r\n      options: ['success', 'error', 'warning', 'info'],\r\n      name: 'Third Alert Type',\r\n    },\r\n    thirdAction: {\r\n      control: { type: 'text', disable: false },\r\n      name: 'Third Alert Action',\r\n    },\r\n    thirdDismissible: { control: 'boolean', name: 'Third Alert Dismissible' },\r\n    thirdIcon: {\r\n      control: 'select',\r\n      options: [\r\n        '',\r\n        'pizza',\r\n        'mood',\r\n        'star',\r\n        'favorite',\r\n        'thumb_up',\r\n        'lightbulb',\r\n        'coffee',\r\n        'cloud',\r\n        'music_note',\r\n        'pets',\r\n        'rocket',\r\n        'beach_access',\r\n      ],\r\n      name: 'Third Alert Icon',\r\n    },\r\n    thirdDuration: { control: 'number', name: 'Third Alert Duration' },\r\n    thirdAnimation: {\r\n      control: 'select',\r\n      options: ['fade', 'slide'],\r\n      name: 'Third Alert Animation',\r\n    },\r\n    thirdPosition: {\r\n      control: 'select',\r\n      options: [\r\n        'top-left',\r\n        'top-center',\r\n        'top-right',\r\n        'bottom-left',\r\n        'bottom-center',\r\n        'bottom-right',\r\n      ],\r\n      name: 'Third Alert Position',\r\n    },\r\n\r\n    // Remove inherited fields that are not used in this story\r\n    message: { table: { disable: true } },\r\n    type: { table: { disable: true } },\r\n    duration: { table: { disable: true } },\r\n    action: { table: { disable: true } },\r\n    dismissible: { table: { disable: true } },\r\n    position: { table: { disable: true } },\r\n    icon: { table: { disable: true } },\r\n    animation: { table: { disable: true } },\r\n  },\r\n}"
+        },
+        {
+          "name": "SuccessWithAction",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    message: 'Data saved successfully',\r\n    type: 'success',\r\n    action: 'Undo',\r\n    duration: 3000,\r\n    position: 'bottom-center',\r\n  },\r\n}"
+        },
+        {
+          "name": "WarningWithCustomIcon",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: {\r\n    message: 'Custom icon alert',\r\n    type: 'warning',\r\n    icon: 'star',\r\n    dismissible: true,\r\n    duration: 5000,\r\n    position: 'top-center',\r\n  },\r\n}"
         }
       ],
       "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
@@ -3248,6 +3463,38 @@
           "deprecationMessage": "",
           "type": "StorybookConfig",
           "defaultValue": "{\r\n  stories: ['../**/*.@(mdx|stories.@(js|jsx|ts|tsx))'],\r\n  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions'],\r\n  framework: {\r\n    name: '@storybook/angular',\r\n    options: {},\r\n  },\r\n  docs: {\r\n    autodocs: true,\r\n    defaultName: 'Docs',\r\n  },\r\n}"
+        }
+      ],
+      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
+        {
+          "name": "CustomizeDropdown",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<SelectComponent>",
+          "defaultValue": "{\r\n  args: {\r\n    width: '300px',\r\n    options: [\r\n      { value: 'a', label: 'Alpha' },\r\n      { value: 'b', label: 'Beta' },\r\n      { value: 'c', label: 'Gamma' },\r\n    ],\r\n  },\r\n  argTypes: {\r\n    options: {\r\n      control: 'object',\r\n      description:\r\n        'Options for the dropdown. You can edit the label and value here.',\r\n    },\r\n  },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Custom Dropdown</label>\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        [width]=\"width\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
+        },
+        {
+          "name": "Default",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<SelectComponent>",
+          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
+        },
+        {
+          "name": "Multiple",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "StoryObj<SelectComponent>",
+          "defaultValue": "{\r\n  args: { multiple: true },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
         }
       ],
       "libs/ngx-tailwind-flex-ui/src/lib/progress-bar/progress-bar.component.stories.ts": [
@@ -3366,28 +3613,6 @@
           "defaultValue": "{\r\n  args: {\r\n    length: 100,\r\n    pageSize: 10,\r\n    pageIndex: 0,\r\n  },\r\n}"
         }
       ],
-      "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts": [
-        {
-          "name": "Default",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
-        },
-        {
-          "name": "Multiple",
-          "ctype": "miscellaneous",
-          "subtype": "variable",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "type": "StoryObj<SelectComponent>",
-          "defaultValue": "{\r\n  args: { multiple: true },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <lib-select\r\n        [placeholder]=\"placeholder\"\r\n        [disabled]=\"disabled\"\r\n        [multiple]=\"multiple\"\r\n        [options]=\"options\"\r\n        (selectionChange)=\"selectionChange($event)\"\r\n      >\r\n        <lib-select-option *ngFor=\"let opt of options\" [value]=\"opt.value\" [label]=\"opt.label\"></lib-select-option>\r\n      </lib-select>\r\n    `,\r\n  }),\r\n}"
-        }
-      ],
       "libs/ngx-tailwind-flex-ui/.storybook/preview.ts": [
         {
           "name": "link",
@@ -3409,32 +3634,50 @@
           "type": "object",
           "defaultValue": "{\r\n  actions: { argTypesRegex: '^on[A-Z].*' },\r\n  controls: {\r\n    matchers: {\r\n      color: /(background|color)$/i,\r\n      date: /Date$/,\r\n    },\r\n  },\r\n}"
         }
+      ],
+      "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts": [
+        {
+          "name": "meta",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Meta<AccordionComponent>",
+          "defaultValue": "{\r\n  title: 'Components/Accordion',\r\n  component: AccordionComponent,\r\n  decorators: [\r\n    moduleMetadata({\r\n      imports: [AccordionComponent, AccordionPanelComponent],\r\n    }),\r\n  ],\r\n  tags: ['autodocs'],\r\n  argTypes: {\r\n    multi: {\r\n      control: 'boolean',\r\n      description: 'Allow multiple panels to be open',\r\n    },\r\n  },\r\n}"
+        },
+        {
+          "name": "MultiExpansion",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: { multi: true },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Accordion Demo</label>\r\n      <lib-accordion [multi]=\"multi\">\r\n        <lib-accordion-panel header=\"Item A\">\r\n          <p>Content A</p>\r\n        </lib-accordion-panel>\r\n        <lib-accordion-panel header=\"Item B\">\r\n          <p>Content B</p>\r\n        </lib-accordion-panel>\r\n      </lib-accordion>\r\n    `,\r\n  }),\r\n}"
+        },
+        {
+          "name": "SingleExpansion",
+          "ctype": "miscellaneous",
+          "subtype": "variable",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "type": "Story",
+          "defaultValue": "{\r\n  args: { multi: false },\r\n  render: (args) => ({\r\n    props: args,\r\n    template: `\r\n      <label class=\"block mb-2 font-semibold\">Accordion Demo</label>\r\n      <lib-accordion [multi]=\"multi\">\r\n        <lib-accordion-panel header=\"Section 1\">\r\n          <p>Content for section 1</p>\r\n        </lib-accordion-panel>\r\n        <lib-accordion-panel header=\"Section 2\">\r\n          <p>Content for section 2</p>\r\n        </lib-accordion-panel>\r\n      </lib-accordion>\r\n    `,\r\n  }),\r\n}"
+        }
       ]
     },
     "groupedFunctions": {},
     "groupedEnumerations": {},
     "groupedTypeAliases": {
-      "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
+      "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts": [
         {
           "name": "Story",
           "ctype": "miscellaneous",
           "subtype": "typealias",
-          "rawtype": "StoryObj<AlertComponent>",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
-          "deprecated": false,
-          "deprecationMessage": "",
-          "description": "",
-          "kind": 183
-        }
-      ],
-
-      "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts": [
-        {
-          "name": "Story",
-          "ctype": "miscellaneous",
-          "subtype": "typealias",
-          "rawtype": "StoryObj<IconComponent>",
-          "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
+          "rawtype": "StoryObj<AccordionComponent>",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
           "deprecated": false,
           "deprecationMessage": "",
           "description": "",
@@ -3454,7 +3697,19 @@
           "kind": 183
         }
       ],
-
+      "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts": [
+        {
+          "name": "Story",
+          "ctype": "miscellaneous",
+          "subtype": "typealias",
+          "rawtype": "StoryObj<AlertComponent>",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/alert/alert.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "description": "",
+          "kind": 183
+        }
+      ],
       "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts": [
         {
           "name": "Story",
@@ -3462,6 +3717,19 @@
           "subtype": "typealias",
           "rawtype": "StoryObj<LoadingSpinnerComponent>",
           "file": "libs/ngx-tailwind-flex-ui/src/lib/loadingSpinner/loadingSpinner.component.stories.ts",
+          "deprecated": false,
+          "deprecationMessage": "",
+          "description": "",
+          "kind": 183
+        }
+      ],
+      "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts": [
+        {
+          "name": "Story",
+          "ctype": "miscellaneous",
+          "subtype": "typealias",
+          "rawtype": "StoryObj<IconComponent>",
+          "file": "libs/ngx-tailwind-flex-ui/src/lib/icon/icon.stories.ts",
           "deprecated": false,
           "deprecationMessage": "",
           "description": "",
@@ -3516,6 +3784,64 @@
         "name": "parameters",
         "coveragePercent": 0,
         "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion-panel.component.ts",
+        "type": "component",
+        "linktype": "component",
+        "name": "AccordionPanelComponent",
+        "coveragePercent": 0,
+        "coverageCount": "0/6",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "type": "variable",
+        "linktype": "miscellaneous",
+        "linksubtype": "variable",
+        "name": "meta",
+        "coveragePercent": 0,
+        "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "type": "variable",
+        "linktype": "miscellaneous",
+        "linksubtype": "variable",
+        "name": "MultiExpansion",
+        "coveragePercent": 0,
+        "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "type": "variable",
+        "linktype": "miscellaneous",
+        "linksubtype": "variable",
+        "name": "SingleExpansion",
+        "coveragePercent": 0,
+        "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.stories.ts",
+        "type": "type alias",
+        "linktype": "miscellaneous",
+        "linksubtype": "typealias",
+        "name": "Story",
+        "coveragePercent": 0,
+        "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/accordion/accordion.component.ts",
+        "type": "component",
+        "linktype": "component",
+        "name": "AccordionComponent",
+        "coveragePercent": 0,
+        "coverageCount": "0/4",
         "status": "low"
       },
       {
@@ -3965,6 +4291,16 @@
         "type": "variable",
         "linktype": "miscellaneous",
         "linksubtype": "variable",
+        "name": "CustomizeDropdown",
+        "coveragePercent": 0,
+        "coverageCount": "0/1",
+        "status": "low"
+      },
+      {
+        "filePath": "libs/ngx-tailwind-flex-ui/src/lib/select/select.component.stories.ts",
+        "type": "variable",
+        "linktype": "miscellaneous",
+        "linksubtype": "variable",
         "name": "Default",
         "coveragePercent": 0,
         "coverageCount": "0/1",
@@ -3986,7 +4322,7 @@
         "linktype": "component",
         "name": "SelectComponent",
         "coveragePercent": 0,
-        "coverageCount": "0/41",
+        "coverageCount": "0/45",
         "status": "low"
       }
     ]
