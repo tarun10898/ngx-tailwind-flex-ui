@@ -42,7 +42,6 @@ export class SelectComponent implements ControlValueAccessor, AfterContentInit {
   @Input() ariaLabel = '';
   @Input() ariaLabelledby = '';
   @Input() options: { value: string | number; label: string }[] = [];
-  @Input() width = '100%';
 
   @Output() openedChange = new EventEmitter<boolean>();
   @Output() selectionChange = new EventEmitter<string | string[] | null>();
@@ -217,31 +216,6 @@ export class SelectComponent implements ControlValueAccessor, AfterContentInit {
 
   private getOptionsArray(): SelectOptionComponent[] {
     return this.optionsQueryList.toArray();
-  }
-
-  clearSelection(event?: Event): void {
-    event?.stopPropagation();
-    this.value = null;
-    this._onTouched();
-    this.cdr.detectChanges();
-  }
-
-  removeSelected(val: string, event?: Event): void {
-    event?.stopPropagation();
-    if (this.multiple && Array.isArray(this.value)) {
-      this.value = this.value.filter((v) => v !== val);
-      this._onTouched();
-      this.cdr.detectChanges();
-    }
-  }
-
-  get selectedValues(): string[] {
-    return Array.isArray(this.value) ? this.value : [];
-  }
-
-  getLabelForValue(val: string): string {
-    const found = this.options.find((o) => o.value.toString() === val);
-    return found ? found.label : val;
   }
 
   @HostListener('document:click', ['$event'])
